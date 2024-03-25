@@ -31,7 +31,11 @@ const loginController = async (req, res) => {
             signed: true,
         });
         res.locals.loggedInUser = req.body.nid;
-        res.status(200).send({ success: true, message: "Register Successful" });
+        res.status(200).send({
+            success: true,
+            message: "Register Successful",
+            token,
+        });
     } catch (error) {
         console.log(error);
         res.status(500).send({
@@ -46,7 +50,7 @@ const registerController = async (req, res) => {
         const existingUser = await queryUser.main({ key: req.body.nid });
         if (existingUser.length !== 0) {
             return res
-                .status(422)
+                .status(200)
                 .send({ success: false, message: "User Already Exist" });
         }
         const password = req.body.password;
@@ -64,4 +68,30 @@ const registerController = async (req, res) => {
     }
 };
 
-module.exports = { loginController, registerController };
+const authController = async (req, res) => {
+    try {
+        const userString = await queryUser.main({ key: req.body.key });
+        if (userString.length === 0) {
+            return res
+                .status(200)
+                .send({ success: false, message: "User Not Found" });
+        }
+        const user = JSON.parse(userString);
+        res.status(200).send({
+            success: true,
+            data: {
+                key: req.body.key,
+                name: user.name,
+                email: user.email,
+            },
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).send({
+            success: false,
+            message: "Authentication Failed!",
+        });
+    }
+};
+
+module.exports = { loginController, registerController, authController };

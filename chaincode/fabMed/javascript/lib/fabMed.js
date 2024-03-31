@@ -56,6 +56,41 @@ class fabMed extends Contract {
         console.info("============= END : Create User ===========");
     }
 
+    async createDoctor(
+        ctx,
+        key,
+        name,
+        email,
+        password,
+        userType,
+        phone,
+        address,
+        website,
+        specialization,
+        experience,
+        fees,
+        time
+    ) {
+        console.info("============= START : Create Doctor ===========");
+
+        const doctor = {
+            name,
+            email,
+            password,
+            userType,
+            phone,
+            address,
+            website,
+            specialization,
+            experience,
+            fees,
+            time,
+        };
+
+        await ctx.stub.putState(key, Buffer.from(JSON.stringify(doctor)));
+        console.info("============= END : Create Doctor ===========");
+    }
+
     async queryAllCars(ctx) {
         const startKey = "CAR0";
         const endKey = "CAR5";

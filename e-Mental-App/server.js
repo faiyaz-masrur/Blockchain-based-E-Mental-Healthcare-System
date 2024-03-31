@@ -9,9 +9,13 @@ const dotenv = require("dotenv");
 const query = require("./data/queryUser");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
+const connectDB = require("./config/db");
 
 // dotenv config
 dotenv.config();
+
+//mongodb connection
+connectDB();
 
 // rest object
 const app = express();
@@ -33,6 +37,7 @@ app.use(cookieParser(process.env.SECRET_KEY));
 
 // routes
 app.use("/api/v1/user", require("./routes/userRoutes"));
+app.use("/api/v1/admin", require("./routes/adminRouters"));
 
 // test route
 // app.get("/", function (req, res) {

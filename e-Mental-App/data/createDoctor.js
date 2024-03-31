@@ -60,15 +60,29 @@ async function main(params) {
         const email = params.email;
         const password = params.password;
         const userType = params.userType;
+        const phone = params.phone;
+        const address = params.address;
+        const website = params.website;
+        const specialization = params.specialization;
+        const experience = params.experience;
+        const fees = params.fees;
+        const time = params.time;
 
         // Submit the specified transaction.
         await contract.submitTransaction(
-            "createUser",
+            "createDoctor",
             `${key}`,
             `${name}`,
             `${email}`,
             `${password}`,
-            `${userType}`
+            `${userType}`,
+            `${phone}`,
+            `${address}`,
+            `${website}`,
+            `${specialization}`,
+            `${experience}`,
+            `${fees}`,
+            `${time}`
         );
         console.log("Transaction has been submitted");
 

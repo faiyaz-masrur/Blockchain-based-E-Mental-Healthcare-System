@@ -1,16 +1,36 @@
-.form-container {
+/* .form-container {
+    padding: 10px;
+    height: 100vh;
+    width: 100vw;
+} */
+
+.log-reg-header {
+    height: 12.5vh;
+    width: 100%;
+    margin-top: 30px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.log-reg-body {
+    height: 100%;
+    width: 100%;
     display: flex;
     align-items: center;
-    justify-content: center;
-    height: 100vh;
+    flex-direction: column;
 }
 
-.register-form {
-    border: 1px solid gray;
-    padding: 30px;
+.form-div {
     width: 30%;
+    margin-bottom: 30px;
 }
 
-.register-form h3 {
-    text-align: center;
+.apply-doctor-link {
+    margin-top: 5px;
+}
+
+button {
+    width: 100%;
 }

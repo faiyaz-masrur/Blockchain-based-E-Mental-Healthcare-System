@@ -5,6 +5,7 @@ import { showLoading, hideLoading } from "../redux/features/alertSlice";
 import { Form, Input, message } from "antd";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import Layout from "../components/Layout";
 
 const Login = () => {
     const navigate = useNavigate();
@@ -32,25 +33,38 @@ const Login = () => {
     return (
         <>
             <div className="form-container">
-                <Form
-                    layout="vertical"
-                    onFinish={onFinishHandler}
-                    className="register-form"
-                >
+                <div className="log-reg-header">
                     <h3>Login Form</h3>
-                    <Form.Item label="User ID || NID" name="nid">
-                        <Input type="text" required />
-                    </Form.Item>
-                    <Form.Item label="Password" name="password">
-                        <Input type="password" required />
-                    </Form.Item>
-                    <Link to="/register" className="m-2">
-                        Not a user Register here
-                    </Link>
-                    <button className="btn btn-primary" type="submit">
-                        Login
-                    </button>
-                </Form>
+                </div>
+                <div className="log-reg-body">
+                    <div className="form-div">
+                        <Form
+                            layout="vertical"
+                            onFinish={onFinishHandler}
+                            className="register-form"
+                        >
+                            <Form.Item label="User ID || NID" name="nid">
+                                <Input type="text" required />
+                            </Form.Item>
+                            <Form.Item label="Password" name="password">
+                                <Input type="password" required />
+                            </Form.Item>
+                            <button className="btn btn-primary" type="submit">
+                                Login
+                            </button>
+                        </Form>
+                    </div>
+                    <div className="register-Link">
+                        <Link to="/register" className="m-2">
+                            Not a user Register here
+                        </Link>
+                    </div>
+                    <div className="apply-doctor-link">
+                        <Link to="/apply-doctor" className="m-2">
+                            Apply Doctor
+                        </Link>
+                    </div>
+                </div>
             </div>
         </>
     );

@@ -30,31 +30,47 @@ const Register = () => {
     return (
         <>
             <div className="form-container">
-                <Form
-                    layout="vertical"
-                    onFinish={onFinishHandler}
-                    className="register-form"
-                >
-                    <h3>Register Form</h3>
-                    <Form.Item label="Nid" name="nid">
-                        <Input type="text" required />
-                    </Form.Item>
-                    <Form.Item label="Name" name="name">
-                        <Input type="text" required />
-                    </Form.Item>
-                    <Form.Item label="Email" name="email">
-                        <Input type="email" required />
-                    </Form.Item>
-                    <Form.Item label="Password" name="password">
-                        <Input type="password" required />
-                    </Form.Item>
-                    <Link to="/login" className="m-2">
-                        Already user login here
-                    </Link>
-                    <button className="btn btn-primary" type="submit">
-                        Register
-                    </button>
-                </Form>
+                <div className="log-reg-header">
+                    <div className="header-title">
+                        <h3>Register Form</h3>
+                    </div>
+                </div>
+                <div className="log-reg-body">
+                    <div className="form-div">
+                        <Form
+                            layout="vertical"
+                            onFinish={onFinishHandler}
+                            className="register-form"
+                        >
+                            <Form.Item label="Nid" name="nid">
+                                <Input type="text" required />
+                            </Form.Item>
+                            <Form.Item label="Name" name="name">
+                                <Input type="text" required />
+                            </Form.Item>
+                            <Form.Item label="Email" name="email">
+                                <Input type="email" required />
+                            </Form.Item>
+                            <Form.Item label="Password" name="password">
+                                <Input type="password" required />
+                            </Form.Item>
+
+                            <button className="btn btn-primary" type="submit">
+                                Register
+                            </button>
+                        </Form>
+                    </div>
+                    <div className="login-Link">
+                        <Link to="/login" className="m-2">
+                            Already user login here
+                        </Link>
+                    </div>
+                    <div className="apply-doctor-link">
+                        <Link to="/apply-doctor" className="m-2">
+                            Apply Doctor
+                        </Link>
+                    </div>
+                </div>
             </div>
         </>
     );

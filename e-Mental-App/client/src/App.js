@@ -6,9 +6,14 @@ import { useSelector } from "react-redux";
 import Spinner from "./components/Spinner";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
-import AddDoctor from "./pages/AddDoctor";
+import AddDoctor from "./pages/admin/AddDoctor";
 import ApplyDoctor from "./pages/ApplyDoctor";
 import NotificationPage from "./pages/NotificationPage";
+import Doctor from "./pages/admin/Doctor";
+import Patient from "./pages/admin/Patient";
+import DoctorProfile from "./pages/doctor/Profile";
+import AdminRoute from "./components/AdminRoute";
+import DoctorRoute from "./components/DoctorRoute";
 
 function App() {
     const { loading } = useSelector((state) => state.alerts);
@@ -36,10 +41,42 @@ function App() {
                             }
                         />
                         <Route
-                            path="/add-doctor"
+                            path="/admin/add-doctor"
                             element={
                                 <ProtectedRoute>
-                                    <AddDoctor />
+                                    <AdminRoute>
+                                        <AddDoctor />
+                                    </AdminRoute>
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/admin/doctors"
+                            element={
+                                <ProtectedRoute>
+                                    <AdminRoute>
+                                        <Doctor />
+                                    </AdminRoute>
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/admin/patients"
+                            element={
+                                <ProtectedRoute>
+                                    <AdminRoute>
+                                        <Patient />
+                                    </AdminRoute>
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/doctor/profile"
+                            element={
+                                <ProtectedRoute>
+                                    <DoctorRoute>
+                                        <DoctorProfile />
+                                    </DoctorRoute>
                                 </ProtectedRoute>
                             }
                         />

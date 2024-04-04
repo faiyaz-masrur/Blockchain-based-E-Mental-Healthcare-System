@@ -1,19 +1,33 @@
-import React from "react";
+import React, { useState } from "react";
 import axios from "axios";
 import { Col, Form, Input, Row, TimePicker, message } from "antd";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { showLoading, hideLoading } from "../redux/features/alertSlice";
+import dayjs from "dayjs";
 
 const ApplyDoctor = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
+    const [valueStart, setValueStart] = useState(null);
+    const [valueEnd, setValueEnd] = useState(null);
+
+    const onChangeStart = (time) => {
+        setValueStart(dayjs(time).format("HH:mm"));
+    };
+    const onChangeEnd = (time) => {
+        setValueEnd(dayjs(time).format("HH:mm"));
+    };
 
     //handle form
     const handleSubmit = async (values) => {
         try {
             dispatch(showLoading());
-            const res = await axios.post("/api/v1/user/apply-doctor", values);
+            const res = await axios.post("/api/v1/user/apply-doctor", {
+                ...values,
+                consultationStartTime: valueStart,
+                consultationEndTime: valueEnd,
+            });
             dispatch(hideLoading());
             if (res.data.success) {
                 message.success(res.data.message);
@@ -29,8 +43,10 @@ const ApplyDoctor = () => {
     };
     return (
         <>
-            <h3 className="text-center">Apply Form</h3>
-            <hr />
+            <h3 className="text-center">
+                Apply Form
+                <hr />
+            </h3>
             <div className="form-container">
                 <Form className="m-3" layout="vertical" onFinish={handleSubmit}>
                     <h5 className="">Doctor's Personal Details :</h5>
@@ -132,8 +148,29 @@ const ApplyDoctor = () => {
                             </Form.Item>
                         </Col>
                         <Col xs={24} md={24} lg={8}>
-                            <Form.Item name="time" label="Timings" required>
-                                <TimePicker.RangePicker format="HH:mm" />
+                            <Form.Item
+                                name="consultationStartTime"
+                                label="Consultation Start Time"
+                                required
+                            >
+                                <TimePicker
+                                    defaultValue={dayjs("00:00", "HH:mm")}
+                                    onChange={onChangeStart}
+                                    format={"HH:mm"}
+                                />
+                            </Form.Item>
+                        </Col>
+                        <Col xs={24} md={24} lg={8}>
+                            <Form.Item
+                                name="consultationEndTime"
+                                label="Consultation End Time"
+                                required
+                            >
+                                <TimePicker
+                                    defaultValue={dayjs("00:00", "HH:mm")}
+                                    onChange={onChangeEnd}
+                                    format={"HH:mm"}
+                                />
                             </Form.Item>
                         </Col>
                     </Row>

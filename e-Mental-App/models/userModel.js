@@ -10,6 +10,10 @@ const userSchema = new mongoose.Schema(
             type: String,
             required: [true, "User type is needed"],
         },
+        status: {
+            type: String,
+            required: [true, "Status is needed"],
+        },
         notification: {
             type: Array,
             default: [],

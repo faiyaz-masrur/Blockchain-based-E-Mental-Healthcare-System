@@ -23,6 +23,9 @@
 }
 
 .form-div {
+    padding: 20px;
+    border: 1px solid gray;
+    border-radius: 5px;
     width: 30%;
     margin-bottom: 30px;
 }

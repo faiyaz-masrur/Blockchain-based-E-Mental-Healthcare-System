@@ -24,6 +24,12 @@ const loginController = async (req, res) => {
                 message: "Invalid User Id or Password!",
             });
         }
+        if (user.status === "blocked") {
+            return res.status(200).send({
+                success: false,
+                message: "Login failed: you are blocked",
+            });
+        }
         const token = jwt.sign({ key: req.body.nid }, process.env.SECRET_KEY, {
             expiresIn: process.env.JWT_EXPIRY,
         });
@@ -50,15 +56,23 @@ const registerController = async (req, res) => {
                 message: "Failed: User Already Exist!",
             });
         }
+        const doctorMdb = await doctorModel.findOne({ nid: req.body.nid });
+        if (doctorMdb) {
+            return res.status(200).send({
+                success: false,
+                message: "Failed: Nid already used!",
+            });
+        }
         const password = req.body.password;
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
         req.body.password = hashedPassword;
-        req.body.userType = "admin";
+        req.body.userType = "patient";
         await createUser.main(req.body);
         const newUser = await userModel({
             nid: req.body.nid,
-            userType: "admin",
+            userType: "patient",
+            status: "approved",
         });
         await newUser.save();
         res.status(200).send({
@@ -75,24 +89,15 @@ const registerController = async (req, res) => {
     }
 };
 
-const authController = async (req, res) => {
+const getUserDataController = async (req, res) => {
     try {
-        const userString = await queryUser.main({ key: req.body.key });
-        if (userString.length === 0) {
-            return res
-                .status(200)
-                .send({ success: false, message: "User Not Found" });
-        }
-        const user = JSON.parse(userString);
-        const userMdb = await userModel.findOne({ nid: req.body.key });
+        const user = req.body.userData;
+        const userMdb = await userModel.findOne({ nid: user.nid });
         if (!userMdb) {
             res.status(200).send({
                 success: true,
                 data: {
-                    key: req.body.key,
-                    name: user.name,
-                    email: user.email,
-                    userType: user.userType,
+                    ...user,
                     notification: [],
                     seenNotification: [],
                 },
@@ -101,10 +106,7 @@ const authController = async (req, res) => {
             res.status(200).send({
                 success: true,
                 data: {
-                    key: req.body.key,
-                    name: user.name,
-                    email: user.email,
-                    userType: user.userType,
+                    ...user,
                     notification: userMdb.notification,
                     seenNotification: userMdb.seenNotification,
                 },
@@ -141,7 +143,10 @@ const applyDoctorController = async (req, res) => {
         req.body.password = hashedPassword;
         const newDoctor = new doctorModel(req.body);
         await newDoctor.save();
-        const adminUser = await userModel.findOne({ userType: "admin" });
+        const adminUser = await userModel.findOne({
+            userType: "admin",
+            status: "approved",
+        });
         const notification = adminUser.notification;
         notification.push({
             type: "apply-doctor-request",
@@ -170,7 +175,8 @@ const applyDoctorController = async (req, res) => {
 
 const getAllNotificationController = async (req, res) => {
     try {
-        const user = await userModel.findOne({ nid: req.body.key });
+        const parsedUser = req.body.userData;
+        const user = await userModel.findOne({ nid: parsedUser.nid });
         const notification = user.notification;
         const seenNotification = user.seenNotification;
         seenNotification.push(...notification);
@@ -194,7 +200,8 @@ const getAllNotificationController = async (req, res) => {
 
 const deleteAllNotificationController = async (req, res) => {
     try {
-        const user = await userModel.findOne({ nid: req.body.key });
+        const parsedUser = req.body.userData;
+        const user = await userModel.findOne({ nid: parsedUser.key });
         user.seenNotification = [];
         const updatedUser = await user.save();
         res.status(200).send({
@@ -215,7 +222,7 @@ const deleteAllNotificationController = async (req, res) => {
 module.exports = {
     loginController,
     registerController,
-    authController,
+    getUserDataController,
     applyDoctorController,
     getAllNotificationController,
     deleteAllNotificationController,

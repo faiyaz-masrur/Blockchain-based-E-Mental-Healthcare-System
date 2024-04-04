@@ -5,7 +5,6 @@ import { showLoading, hideLoading } from "../redux/features/alertSlice";
 import { Form, Input, message } from "antd";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import Layout from "../components/Layout";
 
 const Login = () => {
     const navigate = useNavigate();

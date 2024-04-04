@@ -15,8 +15,37 @@ export const userMenu = [
         icon: "fa-solid fa-user-doctor",
     },
     {
+        name: "Session",
+        path: "/session",
+        icon: "fa-solid fa-user-doctor",
+    },
+    {
+        name: "Access Control",
+        path: "/accessControl",
+        icon: "fa-solid fa-user-doctor",
+    },
+    {
+        name: "Medical Documents",
+        path: "/medicalData",
+        icon: "fa-solid fa-user",
+    },
+];
+
+//doctor menu
+export const doctorMenu = [
+    {
+        name: "Home",
+        path: "/",
+        icon: "fa-solid fa-house",
+    },
+    {
+        name: "Session",
+        path: "/session",
+        icon: "fa-solid fa-user-doctor",
+    },
+    {
         name: "Profile",
-        path: "/profile",
+        path: "/doctor/Profile",
         icon: "fa-solid fa-user",
     },
 ];
@@ -30,22 +59,22 @@ export const adminMenu = [
     },
     {
         name: "Add Doctor",
-        path: "/add-doctor",
+        path: "/admin/add-doctor",
         icon: "fa-solid fa-hospital-user",
     },
     {
-        name: "Doctor",
-        path: "/doctor",
+        name: "Doctors",
+        path: "/admin/doctors",
         icon: "fa-solid fa-user-doctor",
     },
     {
-        name: "Patient",
-        path: "/patient",
+        name: "Patients",
+        path: "/admin/patients",
         icon: "fa-solid fa-hospital-user",
     },
     {
         name: "Profile",
-        path: "/profile",
+        path: "/admin/profile",
         icon: "fa-solid fa-user",
     },
 ];

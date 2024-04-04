@@ -1,16 +1,30 @@
 const jwt = require("jsonwebtoken");
+const queryUser = require("../data/queryUser");
 
 module.exports = async (req, res, next) => {
     try {
         const token = req.headers["authorization"].split(" ")[1];
-        jwt.verify(token, process.env.SECRET_KEY, (err, decode) => {
+        jwt.verify(token, process.env.SECRET_KEY, async (err, decode) => {
             if (err) {
                 return res.status(200).send({
                     success: false,
                     message: "Authentication Failed!",
                 });
             } else {
-                req.body.key = decode.key;
+                const userString = await queryUser.main({ key: decode.key });
+                if (userString.length === 0) {
+                    return res
+                        .status(200)
+                        .send({ success: false, message: "User Not Found" });
+                }
+                const user = JSON.parse(userString);
+                if (user.status === "blocked") {
+                    return res.status(200).send({
+                        success: false,
+                        message: "You are blocked.",
+                    });
+                }
+                req.body.userData = user;
                 next();
             }
         });

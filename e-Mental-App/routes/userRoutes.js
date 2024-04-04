@@ -2,7 +2,7 @@ const express = require("express");
 const {
     loginController,
     registerController,
-    authController,
+    getUserDataController,
     applyDoctorController,
     getAllNotificationController,
     deleteAllNotificationController,
@@ -23,7 +23,7 @@ router.post("/register", registerController);
 router.post("/apply-doctor", applyDoctorController);
 
 // authentication post route
-router.post("/getUserData", authMiddleware, authController);
+router.post("/getUserData", authMiddleware, getUserDataController);
 
 //notification get route
 router.post(

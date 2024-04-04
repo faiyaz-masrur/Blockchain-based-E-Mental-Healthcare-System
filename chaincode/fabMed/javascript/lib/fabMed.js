@@ -42,14 +42,26 @@ class fabMed extends Contract {
         return userAsBytes.toString();
     }
 
-    async createUser(ctx, key, name, email, password, userType) {
+    async createUser(
+        ctx,
+        key,
+        name,
+        email,
+        password,
+        userType,
+        status,
+        createdAt
+    ) {
         console.info("============= START : Create User ===========");
 
         const user = {
+            nid: key,
             name,
             email,
             password,
             userType,
+            status,
+            createdAt,
         };
 
         await ctx.stub.putState(key, Buffer.from(JSON.stringify(user)));
@@ -69,11 +81,15 @@ class fabMed extends Contract {
         specialization,
         experience,
         fees,
-        time
+        consultationStartTime,
+        consultationEndTime,
+        status,
+        createdAt
     ) {
         console.info("============= START : Create Doctor ===========");
 
         const doctor = {
+            nid: key,
             name,
             email,
             password,
@@ -84,47 +100,50 @@ class fabMed extends Contract {
             specialization,
             experience,
             fees,
-            time,
+            consultationStartTime,
+            consultationEndTime,
+            status,
+            createdAt,
         };
 
         await ctx.stub.putState(key, Buffer.from(JSON.stringify(doctor)));
         console.info("============= END : Create Doctor ===========");
     }
 
-    async queryAllCars(ctx) {
-        const startKey = "CAR0";
-        const endKey = "CAR5";
+    async queryAllUsers(ctx) {
+        const startKey = "";
+        const endKey = "";
         const allResults = [];
-        for await (const { key, value } of ctx.stub.getStateByRange(
+        for await (const { value } of ctx.stub.getStateByRange(
             startKey,
             endKey
         )) {
             const strValue = Buffer.from(value).toString("utf8");
-            let record;
+            let result;
             try {
-                record = JSON.parse(strValue);
+                result = JSON.parse(strValue);
             } catch (err) {
                 console.log(err);
-                record = strValue;
+                result = strValue;
             }
-            allResults.push({ Key: key, Record: record });
+            allResults.push(result);
         }
         console.info(allResults);
         return JSON.stringify(allResults);
     }
 
-    async changeCarOwner(ctx, carNumber, newOwner) {
-        console.info("============= START : changeCarOwner ===========");
+    async userStatus(ctx, userKey, newStatus) {
+        console.info("============= START : changeUserStatus ===========");
 
-        const carAsBytes = await ctx.stub.getState(carNumber); // get the car from chaincode state
-        if (!carAsBytes || carAsBytes.length === 0) {
-            throw new Error(`${carNumber} does not exist`);
+        const userAsBytes = await ctx.stub.getState(userKey); // get the user from chaincode state
+        if (!userAsBytes || userAsBytes.length === 0) {
+            throw new Error(`${userAsBytes} does not exist`);
         }
-        const car = JSON.parse(carAsBytes.toString());
-        car.owner = newOwner;
+        const user = JSON.parse(userAsBytes.toString());
+        user.status = newStatus;
 
-        await ctx.stub.putState(carNumber, Buffer.from(JSON.stringify(car)));
-        console.info("============= END : changeCarOwner ===========");
+        await ctx.stub.putState(userKey, Buffer.from(JSON.stringify(user)));
+        console.info("============= END : changeUserStatus ===========");
     }
 }
 

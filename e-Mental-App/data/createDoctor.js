@@ -54,19 +54,28 @@ async function main(params) {
         // Get the contract from the network.
         const contract = network.getContract("fabMed");
 
+        const time = new Date();
+        const currentTime = `${time.getDate()}/${
+            time.getMonth() + 1
+        }/${time.getFullYear()}, ${time.getHours()}:${time.getMinutes()}:${time.getSeconds()}`;
+
         // gathering payload data
         const key = params.nid;
         const name = params.name;
         const email = params.email;
         const password = params.password;
-        const userType = params.userType;
         const phone = params.phone;
         const address = params.address;
         const website = params.website;
         const specialization = params.specialization;
         const experience = params.experience;
         const fees = params.fees;
-        const time = params.time;
+        const consultationStartTime = params.consultationStartTime;
+        const consultationEndTime = params.consultationEndTime;
+        const status = "approved";
+        const userType = "doctor";
+        const createdAt =
+            params.createdAt === "" ? currentTime : params.createdAt;
 
         // Submit the specified transaction.
         await contract.submitTransaction(
@@ -82,7 +91,10 @@ async function main(params) {
             `${specialization}`,
             `${experience}`,
             `${fees}`,
-            `${time}`
+            `${consultationStartTime}`,
+            `${consultationEndTime}`,
+            `${status}`,
+            `${createdAt}`
         );
         console.log("Transaction has been submitted");
 

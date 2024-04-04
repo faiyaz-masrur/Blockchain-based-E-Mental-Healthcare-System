@@ -1,6 +1,6 @@
 import React from "react";
 import "../styles/LayoutStyles.css";
-import { adminMenu, userMenu } from "../data/data";
+import { adminMenu, userMenu, doctorMenu } from "../data/data";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { message, Badge } from "antd";
@@ -21,7 +21,12 @@ const Layout = ({ children }) => {
     };
 
     // rendering the menu list
-    const SidebarMenu = user?.userType === "admin" ? adminMenu : userMenu;
+    const SidebarMenu =
+        user?.userType === "admin"
+            ? adminMenu
+            : user?.userType === "doctor"
+            ? doctorMenu
+            : userMenu;
     return (
         <>
             <div className="main">

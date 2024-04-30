@@ -39,6 +39,7 @@ app.use(cookieParser(process.env.SECRET_KEY));
 app.use("/api/v1/user", require("./routes/userRoutes"));
 app.use("/api/v1/admin", require("./routes/adminRouters"));
 app.use("/api/v1/doctor", require("./routes/doctorRoutes"));
+app.use("/api/v1/patient", require("./routes/patientRoutes"));
 
 // port
 const port = process.env.PORT || 8080;

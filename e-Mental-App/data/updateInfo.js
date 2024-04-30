@@ -10,7 +10,7 @@ const { Gateway, Wallets } = require("fabric-network");
 const path = require("path");
 const fs = require("fs");
 
-async function main(queryData) {
+async function main(params) {
     try {
         // load the network configuration
         const ccpPath = path.resolve(
@@ -23,7 +23,7 @@ async function main(queryData) {
             "org1.example.com",
             "connection-org1.json"
         );
-        const ccp = JSON.parse(fs.readFileSync(ccpPath, "utf8"));
+        let ccp = JSON.parse(fs.readFileSync(ccpPath, "utf8"));
 
         // Create a new file system based wallet for managing identities.
         const walletPath = path.join(process.cwd(), "wallet");
@@ -54,29 +54,26 @@ async function main(queryData) {
         // Get the contract from the network.
         const contract = network.getContract("fabMed");
 
-        /// IF QUERY DATA IS AVAILABLE
-        if (queryData.key) {
-            const queryResult = await contract.evaluateTransaction(
-                "queryUser",
-                `${queryData.key}`
-            );
-            console.log(
-                `QUERY Transaction has been evaluated, result is: ${queryResult}`
-            );
+        const func = params.function;
+        const key = params.key;
+        const newStatus = params.newStatus;
+        const otherKey = params.otherKey ? params.otherKey : "";
+        const createdAt = params.createdAt ? params.createdAt : "";
 
-            return queryResult;
-        }
+        // Submit the specified transaction.
+        await contract.submitTransaction(
+            `${func}`,
+            `${key}`,
+            `${otherKey}`,
+            `${newStatus}`,
+            `${createdAt}`
+        );
+        console.log("Transaction has been submitted");
 
-        // Evaluate the specified transaction.
-        // queryAllUsers transaction - requires no arguments, ex: ('queryAllUsers')
-        const result = await contract.evaluateTransaction("queryAllUsers");
-        console.log(`Transaction has been evaluated, result is: ${result}`);
         // Disconnect from the gateway.
         await gateway.disconnect();
-
-        return result;
     } catch (error) {
-        console.error(`Failed to evaluate transaction: ${error}`);
+        console.error(`Failed to change owner transaction: ${error}`);
         return error;
     }
 }

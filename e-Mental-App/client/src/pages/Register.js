@@ -51,6 +51,9 @@ const Register = () => {
                             <Form.Item label="Email" name="email">
                                 <Input type="email" required />
                             </Form.Item>
+                            <Form.Item label="Phone" name="phone">
+                                <Input type="text" required />
+                            </Form.Item>
                             <Form.Item label="Password" name="password">
                                 <Input type="password" required />
                             </Form.Item>

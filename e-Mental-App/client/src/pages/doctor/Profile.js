@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import Layout from "../../components/Layout";
 import { useDispatch, useSelector } from "react-redux";
-import { message, Col, Form, Input, Row, TimePicker } from "antd";
+import { message, Col, Form, Input, Row, TimePicker, InputNumber } from "antd";
 import { showLoading, hideLoading } from "../../redux/features/alertSlice";
 import dayjs from "dayjs";
 
@@ -50,6 +50,34 @@ const Profile = () => {
         }
     };
 
+    const changeStatusHandler = async (status) => {
+        try {
+            dispatch(showLoading());
+            const res = await axios.post(
+                "/api/v1/doctor/change-user-status",
+                {
+                    key: user.nid,
+                    newStatus: status,
+                },
+                {
+                    headers: {
+                        Authorization:
+                            "Bearer " + localStorage.getItem("token"),
+                    },
+                }
+            );
+            dispatch(hideLoading());
+            if (res.data.success) {
+                message.success(res.data.message);
+            } else {
+                message.error(res.data.message);
+            }
+        } catch (error) {
+            dispatch(hideLoading());
+            console.log("Error: ", error);
+        }
+    };
+
     return (
         <Layout>
             <h3 className="p-2 text-center">
@@ -61,6 +89,14 @@ const Profile = () => {
                 onFinish={handleSubmit}
                 initialValues={{
                     ...user,
+                    consultationStartTime: dayjs(
+                        user.consultationStartTime,
+                        "HH:mm"
+                    ),
+                    consultationEndTime: dayjs(
+                        user.consultationEndTime,
+                        "HH:mm"
+                    ),
                 }}
             >
                 <h5 className="">Doctor's App Details :</h5>
@@ -116,14 +152,14 @@ const Profile = () => {
                     </Col>
                     <Col xs={24} md={24} lg={8}>
                         <Form.Item
-                            name="address"
-                            label="Chamber"
+                            name="degree"
+                            label="Degree"
                             required
                             rules={[{ required: true }]}
                         >
                             <Input
                                 type="text"
-                                placeholder="Enter chamber address"
+                                placeholder="Enter all the degrees (comma separated)"
                             />
                         </Form.Item>
                     </Col>
@@ -138,6 +174,19 @@ const Profile = () => {
                 </Row>
                 <h5 className="">Doctor's Professional Details :</h5>
                 <Row gutter="20">
+                    <Col xs={24} md={24} lg={8}>
+                        <Form.Item
+                            name="address"
+                            label="Chamber"
+                            required
+                            rules={[{ required: true }]}
+                        >
+                            <Input
+                                type="text"
+                                placeholder="Enter chamber address"
+                            />
+                        </Form.Item>
+                    </Col>
                     <Col xs={24} md={24} lg={8}>
                         <Form.Item
                             name="specialization"
@@ -179,6 +228,16 @@ const Profile = () => {
                     </Col>
                     <Col xs={24} md={24} lg={8}>
                         <Form.Item
+                            name="consultationDuration"
+                            label="Per Consultation Duration (Minutes)"
+                            required
+                            rules={[{ required: true }]}
+                        >
+                            <InputNumber min={15} defaultValue={15} />
+                        </Form.Item>
+                    </Col>
+                    <Col xs={24} md={24} lg={8}>
+                        <Form.Item
                             name="consultationStartTime"
                             label="Consultation Start Time"
                             required
@@ -201,16 +260,30 @@ const Profile = () => {
                             />
                         </Form.Item>
                     </Col>
-                    <Col xs={24} md={24} lg={8}>
-                        <button
-                            className="btn btn-primary add-form-btn"
-                            type="submit"
-                        >
-                            Submit
-                        </button>
-                    </Col>
                 </Row>
+                <div className="d-flex justify-content-center">
+                    <button className="btn btn-primary w-30 m-1" type="submit">
+                        Submit
+                    </button>
+                </div>
             </Form>
+            <div className="d-flex justify-content-center">
+                {user.status === "blocked" ? (
+                    <button
+                        className="btn btn-success m-2"
+                        onClick={() => changeStatusHandler("approved")}
+                    >
+                        Activate
+                    </button>
+                ) : (
+                    <button
+                        className="btn btn-danger m-2"
+                        onClick={() => changeStatusHandler("blocked")}
+                    >
+                        Deactivate
+                    </button>
+                )}
+            </div>
         </Layout>
     );
 };

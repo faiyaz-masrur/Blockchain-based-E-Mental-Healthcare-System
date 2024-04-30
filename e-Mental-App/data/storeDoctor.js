@@ -54,19 +54,59 @@ async function main(params) {
         // Get the contract from the network.
         const contract = network.getContract("fabMed");
 
-        const func = params.function;
-        const key = params.key;
-        const newValue = params.newValue;
+        const time = new Date();
+        const currentTime = `${time.getDate()}/${
+            time.getMonth() + 1
+        }/${time.getFullYear()}, ${time.getHours()}:${time.getMinutes()}:${time.getSeconds()}`;
+
+        // gathering payload data
+        const key = params.nid;
+        const name = params.name;
+        const email = params.email;
+        const password = params.password;
+        const phone = params.phone;
+        const degree = params.degree;
+        const address = params.address;
+        const website = params.website;
+        const specialization = params.specialization;
+        const experience = params.experience;
+        const fees = params.fees;
+        const consultationStartTime = params.consultationStartTime;
+        const consultationEndTime = params.consultationEndTime;
+        const consultationDuration = params.consultationDuration;
+        const status = "approved";
+        const userType = "doctor";
+        const createdAt =
+            params.createdAt === "" ? currentTime : params.createdAt;
 
         // Submit the specified transaction.
-        await contract.submitTransaction(`${func}`, `${key}`, `${newValue}`);
-        console.log("Change Owner Transaction has been submitted");
+        await contract.submitTransaction(
+            "storeDoctor",
+            `${key}`,
+            `${name}`,
+            `${email}`,
+            `${password}`,
+            `${userType}`,
+            `${phone}`,
+            `${degree}`,
+            `${address}`,
+            `${website}`,
+            `${specialization}`,
+            `${experience}`,
+            `${fees}`,
+            `${consultationStartTime}`,
+            `${consultationEndTime}`,
+            `${consultationDuration}`,
+            `${status}`,
+            `${createdAt}`
+        );
+        console.log("Transaction has been submitted");
 
         // Disconnect from the gateway.
         await gateway.disconnect();
     } catch (error) {
-        console.error(`Failed to change owner transaction: ${error}`);
-        process.exit(1);
+        console.error(`Failed to create transaction: ${error}`);
+        return error;
     }
 }
 

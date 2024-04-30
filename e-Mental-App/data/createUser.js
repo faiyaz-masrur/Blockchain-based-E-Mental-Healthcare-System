@@ -59,6 +59,7 @@ async function main(params) {
         const key = params.nid;
         const name = params.name;
         const email = params.email;
+        const phone = params.phone;
         const password = params.password;
         const userType = params.userType;
         const status = "approved";
@@ -72,6 +73,7 @@ async function main(params) {
             `${key}`,
             `${name}`,
             `${email}`,
+            `${phone}`,
             `${password}`,
             `${userType}`,
             `${status}`,
@@ -83,7 +85,7 @@ async function main(params) {
         await gateway.disconnect();
     } catch (error) {
         console.error(`Failed to create transaction: ${error}`);
-        process.exit(1);
+        return error;
     }
 }
 

@@ -67,11 +67,11 @@ const registerController = async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
         req.body.password = hashedPassword;
-        req.body.userType = "patient";
+        req.body.userType = "admin";
         await createUser.main(req.body);
         const newUser = await userModel({
             nid: req.body.nid,
-            userType: "patient",
+            userType: "admin",
             status: "approved",
         });
         await newUser.save();
@@ -91,32 +91,23 @@ const registerController = async (req, res) => {
 
 const getUserDataController = async (req, res) => {
     try {
-        const user = req.body.userData;
-        const userMdb = await userModel.findOne({ nid: user.nid });
-        if (!userMdb) {
-            res.status(200).send({
-                success: true,
-                data: {
-                    ...user,
-                    notification: [],
-                    seenNotification: [],
-                },
-            });
-        } else {
-            res.status(200).send({
-                success: true,
-                data: {
-                    ...user,
-                    notification: userMdb.notification,
-                    seenNotification: userMdb.seenNotification,
-                },
-            });
-        }
+        const userMdb = await userModel.findOne({ nid: req.body.userData.nid });
+        res.status(200).send({
+            success: true,
+            data: {
+                ...req.body.userData,
+                notificationLength: userMdb.notification.length,
+            },
+        });
     } catch (error) {
         console.log(error);
-        res.status(500).send({
-            success: false,
-            message: "Authentication Failed!",
+        res.status(200).send({
+            success: true,
+            message: "External Database Failed!",
+            data: {
+                ...req.body.userData,
+                notificationLength: null,
+            },
         });
     }
 };
@@ -173,7 +164,26 @@ const applyDoctorController = async (req, res) => {
     }
 };
 
-const getAllNotificationController = async (req, res) => {
+const getAllNotificationsController = async (req, res) => {
+    try {
+        const parsedUser = req.body.userData;
+        const user = await userModel.findOne({ nid: parsedUser.nid });
+        res.status(200).send({
+            success: true,
+            message: "All notifications",
+            unSeenNotifications: user.notification,
+            seenNotifications: user.seenNotification,
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).send({
+            success: false,
+            message: "Server error : Failed getting notification",
+        });
+    }
+};
+
+const markAllNotificationsController = async (req, res) => {
     try {
         const parsedUser = req.body.userData;
         const user = await userModel.findOne({ nid: parsedUser.nid });
@@ -185,35 +195,62 @@ const getAllNotificationController = async (req, res) => {
         const updatedUser = await user.save();
         res.status(200).send({
             success: true,
-            message: "All notification marked as read.",
-            data: updatedUser,
+            message: "All notification marked as seen.",
         });
     } catch (error) {
         console.log(error);
         res.status(500).send({
             success: false,
             message: "Server error : Failed getting notification",
-            error,
         });
     }
 };
 
-const deleteAllNotificationController = async (req, res) => {
+const deleteAllNotificationsController = async (req, res) => {
     try {
         const parsedUser = req.body.userData;
-        const user = await userModel.findOne({ nid: parsedUser.key });
+        const user = await userModel.findOne({ nid: parsedUser.nid });
         user.seenNotification = [];
         const updatedUser = await user.save();
         res.status(200).send({
             success: true,
             message: "All notification deleted successfully",
-            data: updatedUser,
         });
     } catch (error) {
         console.log(error);
         res.status(500).send({
             success: false,
             message: "Server error : Failed deleting notifications",
+        });
+    }
+};
+
+const storeUsersToMDbController = async (req, res) => {
+    try {
+        const usersStr = await queryUser.main({});
+        if (usersStr.length === 0) {
+            return res
+                .status(200)
+                .send({ success: false, message: "Failed : Users Not Found" });
+        }
+        const users = JSON.parse(usersStr);
+        for (let i = 0; i < users.length; i++) {
+            const newUser = await userModel({
+                nid: users[i].nid,
+                userType: users[i].userType,
+                status: users[i].status,
+            });
+            await newUser.save();
+        }
+        res.status(200).send({
+            success: true,
+            message: "All users add to mdb successfully",
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).send({
+            success: false,
+            message: "Server error : Failed adding users to mdb",
             error,
         });
     }
@@ -224,6 +261,8 @@ module.exports = {
     registerController,
     getUserDataController,
     applyDoctorController,
-    getAllNotificationController,
-    deleteAllNotificationController,
+    getAllNotificationsController,
+    markAllNotificationsController,
+    deleteAllNotificationsController,
+    storeUsersToMDbController,
 };

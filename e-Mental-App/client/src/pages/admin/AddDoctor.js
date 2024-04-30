@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import Layout from "../../components/Layout";
-import { Col, Form, Input, Row, TimePicker, message } from "antd";
+import { Col, Form, Input, Row, TimePicker, message, InputNumber } from "antd";
 import { useDispatch } from "react-redux";
 import { showLoading, hideLoading } from "../../redux/features/alertSlice";
 import dayjs from "dayjs";
@@ -93,14 +93,14 @@ const AddDoctor = () => {
                     </Col>
                     <Col xs={24} md={24} lg={8}>
                         <Form.Item
-                            name="address"
-                            label="Chamber"
+                            name="degree"
+                            label="Degree"
                             required
                             rules={[{ required: true }]}
                         >
                             <Input
                                 type="text"
-                                placeholder="Enter chamber address"
+                                placeholder="Enter all  the degrees (comma separated)"
                             />
                         </Form.Item>
                     </Col>
@@ -115,6 +115,19 @@ const AddDoctor = () => {
                 </Row>
                 <h5 className="">Doctor's Professional Details :</h5>
                 <Row gutter="20">
+                    <Col xs={24} md={24} lg={8}>
+                        <Form.Item
+                            name="address"
+                            label="Chamber"
+                            required
+                            rules={[{ required: true }]}
+                        >
+                            <Input
+                                type="text"
+                                placeholder="Enter chamber address"
+                            />
+                        </Form.Item>
+                    </Col>
                     <Col xs={24} md={24} lg={8}>
                         <Form.Item
                             name="specialization"
@@ -152,6 +165,16 @@ const AddDoctor = () => {
                                 type="text"
                                 placeholder="Enter fees per consultation"
                             />
+                        </Form.Item>
+                    </Col>
+                    <Col xs={24} md={24} lg={8}>
+                        <Form.Item
+                            name="consultationDuration"
+                            label="Per Consultation Duration (Minutes)"
+                            required
+                            rules={[{ required: true }]}
+                        >
+                            <InputNumber min={15} defaultValue={15} />
                         </Form.Item>
                     </Col>
                     <Col xs={24} md={24} lg={8}>

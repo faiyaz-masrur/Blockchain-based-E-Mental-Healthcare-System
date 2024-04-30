@@ -24,6 +24,8 @@ module.exports = async (req, res, next) => {
                         message: "You are blocked.",
                     });
                 }
+                user.password = null;
+                user.appointments = null;
                 req.body.userData = user;
                 next();
             }

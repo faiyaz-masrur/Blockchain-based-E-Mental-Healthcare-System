@@ -2,15 +2,17 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Layout from "../../components/Layout";
 import { Table, message } from "antd";
+import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { showLoading, hideLoading } from "../../redux/features/alertSlice";
 
 const Doctor = () => {
+    const navigate = useNavigate();
     const dispatch = useDispatch();
     const [doctors, setDoctors] = useState([]);
     const [appliedDoctors, setAppliedDoctors] = useState([]);
 
-    //get patients
+    //get doctors
     const getDoctors = async () => {
         try {
             const res = await axios.get("/api/v1/admin/get-all-doctors", {
@@ -67,24 +69,12 @@ const Doctor = () => {
             dataIndex: "name",
         },
         {
-            title: "Email",
-            dataIndex: "email",
-        },
-        {
-            title: "Address",
-            dataIndex: "address",
-        },
-        {
             title: "Specialization",
             dataIndex: "specialization",
         },
         {
             title: "Experience",
             dataIndex: "experience",
-        },
-        {
-            title: "Fees",
-            dataIndex: "fees",
         },
         {
             title: "Type",
@@ -103,9 +93,17 @@ const Doctor = () => {
             dataIndex: "actions",
             render: (text, record) => (
                 <div className="d-flex">
+                    <button
+                        className="btn btn-primary m-1"
+                        onClick={() =>
+                            navigate(`/admin/get-doctor-details/${record.nid}`)
+                        }
+                    >
+                        View
+                    </button>
                     {record.status === "blocked" ? (
                         <button
-                            className="btn btn-success"
+                            className="btn btn-success m-1"
                             onClick={() =>
                                 changeStatusHandler(record, "approved")
                             }
@@ -114,7 +112,7 @@ const Doctor = () => {
                         </button>
                     ) : (
                         <button
-                            className="btn btn-danger"
+                            className="btn btn-danger m-1"
                             onClick={() =>
                                 changeStatusHandler(record, "blocked")
                             }
@@ -132,24 +130,12 @@ const Doctor = () => {
             dataIndex: "name",
         },
         {
-            title: "Email",
-            dataIndex: "email",
-        },
-        {
-            title: "Address",
-            dataIndex: "address",
-        },
-        {
             title: "Specialization",
             dataIndex: "specialization",
         },
         {
             title: "Experience",
             dataIndex: "experience",
-        },
-        {
-            title: "Fees",
-            dataIndex: "fees",
         },
         {
             title: "Type",
@@ -161,10 +147,18 @@ const Doctor = () => {
             render: (text, record) => (
                 <div className="d-flex">
                     <button
+                        className="btn btn-primary m-1"
+                        onClick={() =>
+                            navigate(`/admin/get-doctor-details/${record.nid}`)
+                        }
+                    >
+                        View Details
+                    </button>
+                    <button
                         className="btn btn-success m-1"
                         onClick={() => changeStatusHandler(record, "approved")}
                     >
-                        Approve
+                        Accept
                     </button>
                     <button
                         className="btn btn-danger m-1"

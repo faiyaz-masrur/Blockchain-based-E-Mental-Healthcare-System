@@ -17,6 +17,10 @@ const doctorSchema = new mongoose.Schema({
         type: String,
         required: [true, "Email is required"],
     },
+    degree: {
+        type: String,
+        required: [true, "Degree is required"],
+    },
     website: {
         type: String,
     },
@@ -35,6 +39,10 @@ const doctorSchema = new mongoose.Schema({
     fees: {
         type: Number,
         required: [true, "Fees is required"],
+    },
+    consultationDuration: {
+        type: Number,
+        requied: [true, "Duration is required"],
     },
     consultationStartTime: {
         type: String,

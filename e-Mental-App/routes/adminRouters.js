@@ -6,6 +6,7 @@ const {
     getAllDoctorsController,
     getAllPatientsController,
     changeUserStatusController,
+    getDoctorByIdController,
 } = require("../controllers/adminController");
 
 // router object
@@ -42,6 +43,14 @@ router.post(
     authMiddleware,
     checkAdminMiddleware,
     changeUserStatusController
+);
+
+// get a doctor info
+router.post(
+    "/get-doctor-byId",
+    authMiddleware,
+    checkAdminMiddleware,
+    getDoctorByIdController
 );
 
 module.exports = router;

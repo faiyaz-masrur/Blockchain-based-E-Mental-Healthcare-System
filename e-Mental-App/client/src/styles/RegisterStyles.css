@@ -33,6 +33,10 @@
 .apply-doctor-link {
     margin-top: 5px;
 }
+.store-users-mdb-link {
+    margin-top: 5px;
+    color: red;
+}
 
 button {
     width: 100%;

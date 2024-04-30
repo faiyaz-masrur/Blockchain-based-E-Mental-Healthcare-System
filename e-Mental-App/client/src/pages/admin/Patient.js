@@ -67,6 +67,10 @@ const Patient = () => {
             dataIndex: "email",
         },
         {
+            title: "Phone",
+            dataIndex: "phone",
+        },
+        {
             title: "Status",
             dataIndex: "status",
         },

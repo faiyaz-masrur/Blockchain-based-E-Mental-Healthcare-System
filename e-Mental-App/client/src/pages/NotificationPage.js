@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Layout from "./../components/Layout";
 import { Tabs, message } from "antd";
 import { useDispatch, useSelector } from "react-redux";
@@ -9,13 +9,33 @@ import { useNavigate } from "react-router-dom";
 const NotificationPage = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const { user } = useSelector((state) => state.user);
+    const [unSeenNotifications, setUnSeenNotifications] = useState([]);
+    const [seenNotifications, setSeenNotifications] = useState([]);
 
-    const handleMarkAllRead = async () => {
+    const getNotifications = async () => {
+        try {
+            const res = await axios.get("/api/v1/user/get-all-notifications", {
+                headers: {
+                    Authorization: "Bearer " + localStorage.getItem("token"),
+                },
+            });
+            if (res.data.success) {
+                setUnSeenNotifications(res.data.unSeenNotifications);
+                setSeenNotifications(res.data.seenNotifications);
+                message.success(res.data.message);
+            } else {
+                message.error(res.data.message);
+            }
+        } catch (error) {
+            console.log("Error: ", error);
+        }
+    };
+
+    const handleMarkAllSeen = async () => {
         try {
             dispatch(showLoading());
             const res = await axios.post(
-                "/api/v1/user/get-all-notification",
+                "/api/v1/user/mark-all-notifications",
                 {},
                 {
                     headers: {
@@ -36,11 +56,11 @@ const NotificationPage = () => {
             message.error("Something went wrong!");
         }
     };
-    const handleDeleteAllRead = async () => {
+    const handleDeleteAll = async () => {
         try {
             dispatch(showLoading());
             const res = await axios.post(
-                "/api/v1/user/delete-all-notification",
+                "/api/v1/user/delete-all-notifications",
                 {},
                 {
                     headers: {
@@ -61,21 +81,25 @@ const NotificationPage = () => {
             message.error("Something went wrong!");
         }
     };
+
+    useEffect(() => {
+        getNotifications();
+    }, []);
     return (
         <Layout>
             <h3 className="p-2 text-center">Notification Page</h3>
             <Tabs>
-                <Tabs.TabPane tab="unRead" key={0}>
+                <Tabs.TabPane tab="unSeen" key={0}>
                     <div className="d-flex justify-content-end">
                         <h6
                             className="p-2 text-primary"
-                            onClick={handleMarkAllRead}
+                            onClick={handleMarkAllSeen}
                             style={{ cursor: "pointer" }}
                         >
-                            Mark All Read
+                            Mark All Seen
                         </h6>
                     </div>
-                    {user?.notification.map((notificationMsg) => (
+                    {unSeenNotifications?.map((notificationMsg) => (
                         <div className="card" style={{ cursor: "pointer" }}>
                             <div
                                 className="card-text"
@@ -88,17 +112,17 @@ const NotificationPage = () => {
                         </div>
                     ))}
                 </Tabs.TabPane>
-                <Tabs.TabPane tab="Read" key={1}>
+                <Tabs.TabPane tab="Seen" key={1}>
                     <div className="d-flex justify-content-end">
                         <h6
                             className="p-2 text-danger"
-                            onClick={handleDeleteAllRead}
+                            onClick={handleDeleteAll}
                             style={{ cursor: "pointer" }}
                         >
-                            Delete All Read
+                            Delete All
                         </h6>
                     </div>
-                    {user?.seenNotification.map((notificationMsg) => (
+                    {seenNotifications?.map((notificationMsg) => (
                         <div className="card" style={{ cursor: "pointer" }}>
                             <div
                                 className="card-text"

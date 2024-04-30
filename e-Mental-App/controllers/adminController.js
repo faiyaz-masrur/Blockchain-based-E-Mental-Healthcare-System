@@ -1,6 +1,6 @@
-const createDoctor = require("../data/createDoctor");
+const storeDoctor = require("../data/storeDoctor");
 const queryUser = require("../data/queryUser");
-const changeUserInfo = require("../data/changeUserInfo");
+const updateInfo = require("../data/updateInfo");
 const bcrypt = require("bcryptjs");
 const doctorModel = require("../models/doctorModel");
 const userModel = require("../models/userModel");
@@ -26,7 +26,7 @@ const addDoctorController = async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, salt);
         req.body.password = hashedPassword;
         req.body.createdAt = "";
-        await createDoctor.main(req.body);
+        await storeDoctor.main(req.body);
         const newUser = await userModel({
             nid: req.body.nid,
             userType: "doctor",
@@ -54,12 +54,38 @@ const getAllDoctorsController = async (req, res) => {
         const doctors = allUsersObj.filter(
             (user) => user.userType === "doctor"
         );
-        const applyDoctor = await doctorModel.find({});
+        let doctorsSpecificValue = [];
+        if (doctors.length !== 0) {
+            doctorsSpecificValue = doctors.map((doctor) => {
+                return {
+                    nid: doctor.nid,
+                    name: doctor.name,
+                    specialization: doctor.specialization,
+                    experience: doctor.experience,
+                    userType: doctor.userType,
+                    status: doctor.status,
+                    createdAt: doctor.createdAt,
+                };
+            });
+        }
+        const applyDoctors = await doctorModel.find({});
+        let applyDoctorsSpecificValue = [];
+        if (applyDoctors.length !== 0) {
+            applyDoctorsSpecificValue = applyDoctors.map((applyDoctor) => {
+                return {
+                    nid: applyDoctor.nid,
+                    name: applyDoctor.name,
+                    specialization: applyDoctor.specialization,
+                    experience: applyDoctor.experience,
+                    userType: applyDoctor.userType,
+                };
+            });
+        }
         res.status(200).send({
             success: true,
             message: "All doctors data",
-            data: doctors,
-            requestData: applyDoctor,
+            data: doctorsSpecificValue,
+            requestData: applyDoctorsSpecificValue,
         });
     } catch (error) {
         console.log(error);
@@ -78,6 +104,10 @@ const getAllPatientsController = async (req, res) => {
         const patients = allUsersObj.filter(
             (user) => user.userType === "patient"
         );
+        patients.forEach((patient) => {
+            patient.password = null;
+            patient.appointment = null;
+        });
         res.status(200).send({
             success: true,
             message: "All patients data",
@@ -119,7 +149,7 @@ const changeUserStatusController = async (req, res) => {
                     message: `Request is ${req.body.newStatus}`,
                 });
             }
-            await createDoctor.main(reqDoc);
+            await storeDoctor.main(reqDoc);
             if (reqDoc.userType === "candidate") {
                 const newUser = await userModel({
                     nid: reqDoc.nid,
@@ -146,10 +176,14 @@ const changeUserStatusController = async (req, res) => {
                 message: `Request is ${req.body.newStatus}`,
             });
         } else {
-            await changeUserInfo.main({
-                function: "userStatus",
+            await updateInfo.main({
+                function: "changeUserStatus",
                 key: userId,
                 newValue: req.body.newStatus,
+            });
+            const usermdb = await userModel.findOne({ nid: reqDoc.nid });
+            await userModel.findByIdAndUpdate(usermdb._id, {
+                status: req.body.newStatus,
             });
             res.status(200).send({
                 success: true,
@@ -166,9 +200,35 @@ const changeUserStatusController = async (req, res) => {
     }
 };
 
+const getDoctorByIdController = async (req, res) => {
+    try {
+        const strDoctor = await queryUser.main({ key: req.body.doctorKey });
+        if (strDoctor.length === 0) {
+            return res
+                .status(200)
+                .send({ success: false, message: "Doctor not found!" });
+        }
+        const doctor = JSON.parse(strDoctor);
+        doctor.password = undefined;
+        doctor.appointment = undefined;
+        res.status(200).send({
+            success: true,
+            message: "Doctor info fetched",
+            data: doctor,
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).send({
+            success: false,
+            message: "Server error: Could not get the doctor!",
+        });
+    }
+};
+
 module.exports = {
     addDoctorController,
     getAllDoctorsController,
     getAllPatientsController,
     changeUserStatusController,
+    getDoctorByIdController,
 };

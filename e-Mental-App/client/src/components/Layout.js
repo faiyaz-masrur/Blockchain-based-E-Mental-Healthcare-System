@@ -1,6 +1,6 @@
 import React from "react";
 import "../styles/LayoutStyles.css";
-import { adminMenu, userMenu, doctorMenu } from "../data/data";
+import { adminMenu, patientMenu, doctorMenu } from "../data/data";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { message, Badge } from "antd";
@@ -26,7 +26,7 @@ const Layout = ({ children }) => {
             ? adminMenu
             : user?.userType === "doctor"
             ? doctorMenu
-            : userMenu;
+            : patientMenu;
     return (
         <>
             <div className="main">
@@ -72,7 +72,7 @@ const Layout = ({ children }) => {
                             >
                                 <Badge
                                     className="notify"
-                                    count={user?.notification.length}
+                                    count={user?.notificationLength}
                                     onClick={() => {
                                         navigate("/notification");
                                     }}

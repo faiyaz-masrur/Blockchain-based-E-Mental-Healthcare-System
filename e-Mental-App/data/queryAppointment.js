@@ -54,27 +54,18 @@ async function main(queryData) {
         // Get the contract from the network.
         const contract = network.getContract("fabMed");
 
-        /// IF QUERY DATA IS AVAILABLE
-        if (queryData.key) {
-            const queryResult = await contract.evaluateTransaction(
-                "queryUser",
-                `${queryData.key}`
-            );
-            console.log(
-                `QUERY Transaction has been evaluated, result is: ${queryResult}`
-            );
+        const queryResult = await contract.evaluateTransaction(
+            "queryAppointment",
+            `${queryData.key}`
+        );
+        console.log(
+            `QUERY Transaction has been evaluated, result is: ${queryResult}`
+        );
 
-            return queryResult;
-        }
-
-        // Evaluate the specified transaction.
-        // queryAllUsers transaction - requires no arguments, ex: ('queryAllUsers')
-        const result = await contract.evaluateTransaction("queryAllUsers");
-        console.log(`Transaction has been evaluated, result is: ${result}`);
         // Disconnect from the gateway.
         await gateway.disconnect();
 
-        return result;
+        return queryResult;
     } catch (error) {
         console.error(`Failed to evaluate transaction: ${error}`);
         return error;

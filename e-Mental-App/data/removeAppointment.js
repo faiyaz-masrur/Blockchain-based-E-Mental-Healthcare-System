@@ -54,46 +54,17 @@ async function main(params) {
         // Get the contract from the network.
         const contract = network.getContract("fabMed");
 
-        const time = new Date();
-        const currentTime = `${time.getDate()}/${
-            time.getMonth() + 1
-        }/${time.getFullYear()}, ${time.getHours()}:${time.getMinutes()}:${time.getSeconds()}`;
-
-        // gathering payload data
-        const key = params.nid;
-        const name = params.name;
-        const email = params.email;
-        const password = params.password;
-        const phone = params.phone;
-        const address = params.address;
-        const website = params.website;
-        const specialization = params.specialization;
-        const experience = params.experience;
-        const fees = params.fees;
-        const consultationStartTime = params.consultationStartTime;
-        const consultationEndTime = params.consultationEndTime;
-        const status = "approved";
-        const userType = "doctor";
-        const createdAt =
-            params.createdAt === "" ? currentTime : params.createdAt;
+        const userKey = params.userData.nid;
+        const doctorKey = params.doctorKey;
+        const patientKey = params.patientKey;
+        const createdAt = params.createdAt;
 
         // Submit the specified transaction.
         await contract.submitTransaction(
-            "createDoctor",
-            `${key}`,
-            `${name}`,
-            `${email}`,
-            `${password}`,
-            `${userType}`,
-            `${phone}`,
-            `${address}`,
-            `${website}`,
-            `${specialization}`,
-            `${experience}`,
-            `${fees}`,
-            `${consultationStartTime}`,
-            `${consultationEndTime}`,
-            `${status}`,
+            "removeAppointment",
+            `${userKey}`,
+            `${doctorKey}`,
+            `${patientKey}`,
             `${createdAt}`
         );
         console.log("Transaction has been submitted");
@@ -101,8 +72,8 @@ async function main(params) {
         // Disconnect from the gateway.
         await gateway.disconnect();
     } catch (error) {
-        console.error(`Failed to create transaction: ${error}`);
-        process.exit(1);
+        console.error(`Failed to change owner transaction: ${error}`);
+        return error;
     }
 }
 

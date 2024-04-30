@@ -4,8 +4,10 @@ const {
     registerController,
     getUserDataController,
     applyDoctorController,
-    getAllNotificationController,
-    deleteAllNotificationController,
+    getAllNotificationsController,
+    markAllNotificationsController,
+    deleteAllNotificationsController,
+    storeUsersToMDbController,
 } = require("../controllers/userController");
 const authMiddleware = require("../middlewares/authMiddleware");
 
@@ -15,6 +17,9 @@ const router = express.Router();
 // routes
 // login post route
 router.post("/login", loginController);
+
+// login post route
+router.post("/store-user", storeUsersToMDbController);
 
 // register post route
 router.post("/register", registerController);
@@ -26,16 +31,23 @@ router.post("/apply-doctor", applyDoctorController);
 router.post("/getUserData", authMiddleware, getUserDataController);
 
 //notification get route
-router.post(
-    "/get-all-notification",
+router.get(
+    "/get-all-notifications",
     authMiddleware,
-    getAllNotificationController
+    getAllNotificationsController
+);
+
+router.post(
+    "/mark-all-notifications",
+    authMiddleware,
+    markAllNotificationsController
 );
 
 //notification delete route
 router.post(
-    "/delete-all-notification",
+    "/delete-all-notifications",
     authMiddleware,
-    deleteAllNotificationController
+    deleteAllNotificationsController
 );
+
 module.exports = router;

@@ -29,6 +29,24 @@ const Login = () => {
             message.error("Something Went Wrong!");
         }
     };
+
+    const storeUserInfoHandler = async () => {
+        try {
+            dispatch(showLoading());
+            const res = await axios.post("/api/v1/user/store-user");
+            dispatch(hideLoading());
+            if (res.data.success) {
+                message.success(res.data.message);
+            } else {
+                message.error(res.data.message);
+            }
+        } catch (error) {
+            dispatch(hideLoading());
+            console.log(error);
+            message.error("Something Went Wrong!");
+        }
+    };
+
     return (
         <>
             <div className="form-container">
@@ -62,6 +80,14 @@ const Login = () => {
                         <Link to="/apply-doctor" className="m-2">
                             Apply Doctor
                         </Link>
+                    </div>
+                    <div className="store-users-mdb-link">
+                        <button
+                            className="btn btn-link"
+                            onClick={storeUserInfoHandler}
+                        >
+                            Store User Info
+                        </button>
                     </div>
                 </div>
             </div>

@@ -5,6 +5,7 @@ const appointmentModel = require("../models/appointmentModel");
 const removeAppointment = require("../data/removeAppointment");
 const updateInfo = require("../data/updateInfo");
 const userModel = require("../models/userModel");
+const storeRecord = require("../data/storeRecord");
 const storeAppointment = require("../data/storeAppointment");
 
 const updateProfileController = async (req, res) => {
@@ -120,7 +121,7 @@ const actionRequestedAppointmentCntroller = async (req, res) => {
 const cancelAppointmentCntroller = async (req, res) => {
     try {
         await removeAppointment.main(req.body);
-        if (req.body.type === "canceled") {
+        if (!req.body.type === "removed") {
             await updateInfo.main({
                 function: "changeAppointmentStatus",
                 key: req.body.doctorKey,
@@ -155,7 +156,7 @@ const cancelAppointmentCntroller = async (req, res) => {
     }
 };
 
-const changeAppointmentStatusHandler = async (req, res) => {
+const changeAppointmentStatusController = async (req, res) => {
     try {
         await updateInfo.main({
             function: "changeAppointmentStatus",
@@ -168,11 +169,19 @@ const changeAppointmentStatusHandler = async (req, res) => {
             nid: req.body.patientKey,
         });
         const notification = usermdb.notification;
-        notification.push({
-            type: "session-created",
-            message: `${req.body.userData.name} has created a session, please join.`,
-            onClickPath: "/patient/sessions",
-        });
+        if (req.body.newStatus === "on going") {
+            notification.push({
+                type: "session-created",
+                message: `Dr. ${req.body.userData.name} has created a session, please join.`,
+                onClickPath: "/patient/session",
+            });
+        } else {
+            notification.push({
+                type: "session-ended",
+                message: `Dr. ${req.body.userData.name} has ended the session.`,
+                onClickPath: "/patient/appointments",
+            });
+        }
         await userModel.findByIdAndUpdate(usermdb._id, {
             notification,
         });
@@ -189,11 +198,79 @@ const changeAppointmentStatusHandler = async (req, res) => {
     }
 };
 
+const getAllSessionsController = async (req, res) => {
+    try {
+        const appointmentsStr = await queryAppointment.main({
+            key: req.body.userData.nid,
+        });
+        const appointments = JSON.parse(appointmentsStr);
+        const sessions = appointments.filter(
+            (appointment) => appointment.status === "on going"
+        );
+        res.status(200).send({
+            success: true,
+            message: "All Sessions",
+            sessions,
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).send({
+            success: false,
+            message: "Server error: Failed getting all sessions!",
+        });
+    }
+};
+
+const storeRecordController = async (req, res) => {
+    try {
+        await storeRecord.main({
+            doctorKey: req.body.userData.nid,
+            patientKey: req.body.patientKey,
+            doctorName: req.body.userData.name,
+            disease: req.body.disease,
+            dataHash: req.body.dataHash,
+            fileName: req.body.fileName,
+        });
+        res.status(200).send({
+            success: true,
+            message: "Data uploaded successfully",
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).send({
+            success: false,
+            message: "Server error: Failed uploading data!",
+        });
+    }
+};
+
+const getAllRecordsController = async (req, res) => {
+    try {
+        const userStr = await queryUser.main({ key: req.body.patientKey });
+        const user = JSON.parse(userStr);
+
+        res.status(200).send({
+            success: true,
+            message: "All medical records",
+            records: user.records,
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).send({
+            success: false,
+            message: "Server error: Failed getting medical records!",
+        });
+    }
+};
+
 module.exports = {
     updateProfileController,
     getAllApointmentsController,
     getAllRequestedApointmentsController,
     actionRequestedAppointmentCntroller,
     cancelAppointmentCntroller,
-    changeAppointmentStatusHandler,
+    changeAppointmentStatusController,
+    getAllSessionsController,
+    storeRecordController,
+    getAllRecordsController,
 };

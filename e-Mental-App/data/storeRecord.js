@@ -54,39 +54,29 @@ async function main(params) {
         // Get the contract from the network.
         const contract = network.getContract("fabMed");
 
+        const time = new Date();
+
         // gathering payload data
-        const doctorKey = params.doctorKey;
+        const doctorKey = params.doctorKey ? params.doctorKey : "";
         const patientKey = params.patientKey;
         const doctorName = params.doctorName;
-        const doctorEmail = params.doctorEmail;
-        const doctorPhone = params.doctorPhone;
-        const patientName = params.patientName;
-        const patientEmail = params.patientEmail;
-        const patientPhone = params.patientPhone;
-        const date = params.date;
-        const startTime = params.startTime;
-        const endTime = params.endTime;
-        const status = "scheduled";
-        const createdAt = params.createdAt;
-        const sessionId = params.doctorKey + params.patientKey;
+        const disease = params.disease;
+        const dataHash = params.dataHash;
+        const fileName = params.fileName;
+        const createdAt = `${currentTime.getDate()}/${
+            currentTime.getMonth() + 1
+        }/${currentTime.getFullYear()}, ${currentTime.getHours()}:${currentTime.getMinutes()}:${currentTime.getSeconds()}`;
 
         // Submit the specified transaction.
         await contract.submitTransaction(
-            "storeAppointment",
+            "storeRecord",
             `${doctorKey}`,
             `${patientKey}`,
             `${doctorName}`,
-            `${doctorEmail}`,
-            `${doctorPhone}`,
-            `${patientName}`,
-            `${patientEmail}`,
-            `${patientPhone}`,
-            `${date}`,
-            `${startTime}`,
-            `${endTime}`,
-            `${status}`,
-            `${createdAt}`,
-            `${sessionId}`
+            `${disease}`,
+            `${dataHash}`,
+            `${fileName}`,
+            `${createdAt}`
         );
         console.log("Transaction has been submitted");
 

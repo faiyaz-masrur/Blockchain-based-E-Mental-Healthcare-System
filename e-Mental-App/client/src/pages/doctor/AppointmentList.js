@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import axios from "axios";
 import Layout from "../../components/Layout";
 import { Table, message } from "antd";
@@ -9,10 +9,11 @@ import { showLoading, hideLoading } from "../../redux/features/alertSlice";
 const AppointmentList = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const effectRun = useRef(true);
     const [appointments, setAppointments] = useState([]);
     const [requestedAppointments, setRequestedAppointments] = useState([]);
 
-    const getRequestedAppointments = async () => {
+    const getRequestedAppointments = useCallback(async () => {
         try {
             const res = await axios.get(
                 "/api/v1/doctor/get-all-requested-appointments",
@@ -32,9 +33,9 @@ const AppointmentList = () => {
         } catch (error) {
             console.log("Error: ", error);
         }
-    };
+    }, [setRequestedAppointments]);
 
-    const getAppointments = async () => {
+    const getAppointments = useCallback(async () => {
         try {
             const res = await axios.get("/api/v1/doctor/get-all-appointments", {
                 headers: {
@@ -50,7 +51,7 @@ const AppointmentList = () => {
         } catch (error) {
             console.log("Error: ", error);
         }
-    };
+    }, [setAppointments]);
 
     const actionRequestedAppointmentHandler = async (record, type) => {
         try {
@@ -133,6 +134,9 @@ const AppointmentList = () => {
             dispatch(hideLoading());
             if (res.data.success) {
                 message.success(res.data.message);
+                if (newStatus === "on going") {
+                    navigate("/doctor/session");
+                }
             } else {
                 message.error(res.data.message);
             }
@@ -143,9 +147,15 @@ const AppointmentList = () => {
     };
 
     useEffect(() => {
-        getAppointments();
-        getRequestedAppointments();
-    }, []);
+        if (effectRun.current) {
+            getAppointments();
+            getRequestedAppointments();
+        }
+
+        return () => {
+            effectRun.current = false;
+        };
+    }, [getAppointments, getRequestedAppointments, effectRun]);
 
     const acceptedApointmentColumns = [
         {
@@ -181,7 +191,7 @@ const AppointmentList = () => {
             dataIndex: "actions",
             render: (text, record) =>
                 record.status === "scheduled" ? (
-                    <>
+                    <div className="d-flex">
                         <button
                             className="btn btn-primary m-1"
                             onClick={() =>
@@ -201,7 +211,7 @@ const AppointmentList = () => {
                         >
                             Cancel
                         </button>
-                    </>
+                    </div>
                 ) : record.status === "on going" ? (
                     <button
                         className="btn btn-primary"

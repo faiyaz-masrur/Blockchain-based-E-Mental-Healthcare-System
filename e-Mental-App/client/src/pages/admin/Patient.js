@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import axios from "axios";
 import Layout from "../../components/Layout";
 import { Table, message } from "antd";
@@ -7,10 +7,11 @@ import { showLoading, hideLoading } from "../../redux/features/alertSlice";
 
 const Patient = () => {
     const dispatch = useDispatch();
+    const effectRun = useRef(true);
     const [patients, setPatients] = useState([]);
 
     //get patients
-    const getPatients = async () => {
+    const getPatients = useCallback(async () => {
         try {
             const res = await axios.get("/api/v1/admin/get-all-patients", {
                 headers: {
@@ -26,7 +27,7 @@ const Patient = () => {
         } catch (error) {
             console.log("Error: ", error);
         }
-    };
+    }, [setPatients]);
 
     const changeStatusHandler = async (record, status) => {
         try {
@@ -54,8 +55,14 @@ const Patient = () => {
     };
 
     useEffect(() => {
-        getPatients();
-    }, []);
+        if (effectRun.current) {
+            getPatients();
+        }
+
+        return () => {
+            effectRun.current = false;
+        };
+    }, [getPatients, effectRun]);
 
     const columns = [
         {

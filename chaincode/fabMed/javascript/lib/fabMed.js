@@ -163,6 +163,7 @@ class fabMed extends Contract {
                 status: "approved",
                 createdAt: "06/03/2023",
                 appointments: [],
+                records: [],
                 password:
                     "$2a$10$4i4cFW1y1EKp0gqYPl3jH.vbPr43OT..l6MgWf.f.AaddQNeaK.WK",
             },
@@ -175,6 +176,7 @@ class fabMed extends Contract {
                 status: "approved",
                 createdAt: "31/08/2023",
                 appointments: [],
+                records: [],
                 password:
                     "$2a$10$4i4cFW1y1EKp0gqYPl3jH.vbPr43OT..l6MgWf.f.AaddQNeaK.WK",
             },
@@ -227,6 +229,7 @@ class fabMed extends Contract {
                 status,
                 createdAt,
                 appointments: [],
+                records: [],
             };
 
             await ctx.stub.putState(key, Buffer.from(JSON.stringify(user)));
@@ -354,7 +357,8 @@ class fabMed extends Contract {
         startTime,
         endTime,
         status,
-        createdAt
+        createdAt,
+        sessionId
     ) {
         try {
             const doctorAsBytes = await ctx.stub.getState(doctorKey); // get the user from chaincode state
@@ -375,6 +379,7 @@ class fabMed extends Contract {
                 endTime,
                 status,
                 createdAt,
+                sessionId,
             };
             doctor.appointments.push(appointment);
             patient.appointments.push(appointment);
@@ -398,7 +403,6 @@ class fabMed extends Contract {
             const userAsBytes = await ctx.stub.getState(userKey);
             const user = JSON.parse(userAsBytes.toString());
             const appointments = user.appointments;
-            let removedAppointment;
             for (let i = 0; i < appointments.length; i++) {
                 if (
                     appointments[i].doctorKey === doctorKey &&
@@ -451,6 +455,64 @@ class fabMed extends Contract {
             await ctx.stub.putState(
                 otherKey,
                 Buffer.from(JSON.stringify(otherUser))
+            );
+        } catch (error) {
+            console.log(error);
+            return error;
+        }
+    }
+
+    async storeRecord(
+        ctx,
+        doctorKey,
+        patientKey,
+        doctorName,
+        disease,
+        dataHash,
+        fileName,
+        createdAt
+    ) {
+        try {
+            const patientAsBytes = await ctx.stub.getState(patientKey); // get the user from chaincode state
+            const patient = JSON.parse(patientAsBytes.toString());
+            const data = {
+                doctorKey,
+                doctorName,
+                disease,
+                dataHash,
+                fileName,
+                createdAt,
+            };
+            patient.records.push(data);
+            await ctx.stub.putState(
+                patientKey,
+                Buffer.from(JSON.stringify(patient))
+            );
+        } catch (error) {
+            console.log(error);
+            return error;
+        }
+    }
+
+    async removeRecord(ctx, doctorKey, patientKey, dataHash, createdAt) {
+        try {
+            const userAsBytes = await ctx.stub.getState(patientKey);
+            const user = JSON.parse(userAsBytes.toString());
+            const records = user.records;
+            for (let i = 0; i < records.length; i++) {
+                if (
+                    records[i].doctorKey === doctorKey &&
+                    records[i].dataHash === dataHash &&
+                    records[i].createdAt === createdAt
+                ) {
+                    records.splice(i, 1);
+                    break;
+                }
+            }
+            user.records = records;
+            await ctx.stub.putState(
+                patientKey,
+                Buffer.from(JSON.stringify(user))
             );
         } catch (error) {
             console.log(error);

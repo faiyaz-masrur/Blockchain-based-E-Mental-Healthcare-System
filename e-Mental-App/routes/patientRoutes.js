@@ -10,6 +10,10 @@ const {
     getAllRequestedApointmentsController,
     cancleRequestedAppointmentController,
     cancleAppointmentController,
+    getAllSessionsController,
+    getAllRecordsController,
+    storeRecordController,
+    removeRecordController,
 } = require("../controllers/patientController");
 
 // router object
@@ -76,6 +80,34 @@ router.post(
     authMiddleware,
     checkPatientMiddleware,
     cancleRequestedAppointmentController
+);
+
+router.post(
+    "/store-record",
+    authMiddleware,
+    checkPatientMiddleware,
+    storeRecordController
+);
+
+router.post(
+    "/remove-record",
+    authMiddleware,
+    checkPatientMiddleware,
+    removeRecordController
+);
+
+router.get(
+    "/get-all-sessions",
+    authMiddleware,
+    checkPatientMiddleware,
+    getAllSessionsController
+);
+
+router.get(
+    "/get-all-records",
+    authMiddleware,
+    checkPatientMiddleware,
+    getAllRecordsController
 );
 
 module.exports = router;

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import axios from "axios";
 import { Row, message } from "antd";
 import Layout from "../../components/Layout";
@@ -6,10 +6,11 @@ import { useNavigate } from "react-router-dom";
 
 const DoctorsList = () => {
     const navigate = useNavigate();
+    const effectRun = useRef(true);
     const [doctors, setDoctors] = useState([]);
 
     //get doctors
-    const getDoctors = async () => {
+    const getDoctors = useCallback(async () => {
         try {
             const res = await axios.get("/api/v1/patient/get-all-doctors", {
                 headers: {
@@ -25,11 +26,17 @@ const DoctorsList = () => {
         } catch (error) {
             console.log("Error: ", error);
         }
-    };
+    }, [setDoctors]);
 
     useEffect(() => {
-        getDoctors();
-    }, []);
+        if (effectRun.current) {
+            getDoctors();
+        }
+
+        return () => {
+            effectRun.current = false;
+        };
+    }, [getDoctors, effectRun]);
 
     return (
         <Layout>

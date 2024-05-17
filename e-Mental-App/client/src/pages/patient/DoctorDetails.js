@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
 import Layout from "../../components/Layout";
@@ -7,10 +7,11 @@ import { message, Col, Row } from "antd";
 const DoctorDetails = () => {
     const params = useParams();
     const navigate = useNavigate();
+    const effectRun = useRef(true);
     const [doctor, setDoctor] = useState({});
 
     //get doctor details
-    const getDoctor = async () => {
+    const getDoctor = useCallback(async () => {
         try {
             const res = await axios.post(
                 "/api/v1/patient/get-doctor-byId",
@@ -34,11 +35,17 @@ const DoctorDetails = () => {
         } catch (error) {
             console.log("Error: ", error);
         }
-    };
+    }, [setDoctor, params]);
 
     useEffect(() => {
-        getDoctor();
-    }, []);
+        if (effectRun.current) {
+            getDoctor();
+        }
+
+        return () => {
+            effectRun.current = false;
+        };
+    }, [getDoctor, effectRun]);
 
     return (
         <Layout>

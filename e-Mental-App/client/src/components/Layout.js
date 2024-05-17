@@ -26,7 +26,9 @@ const Layout = ({ children }) => {
             ? adminMenu
             : user?.userType === "doctor"
             ? doctorMenu
-            : patientMenu;
+            : user?.userType === "patient"
+            ? patientMenu
+            : [];
     return (
         <>
             <div className="main">

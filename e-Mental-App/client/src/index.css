@@ -29,3 +29,34 @@
 .card-doctorlist-patient {
     width: 30%;
 }
+
+.ipfs-upload-button {
+    width: 100px;
+    height: 30px;
+    margin: 2px;
+    border-radius: 5px;
+    background-color: #4d4dff;
+    color: white;
+    border: none;
+}
+
+.active .ipfs-upload-button {
+    background-color: blue;
+    color: white;
+}
+
+.record-upload-div {
+    height: 60%;
+    width: 100%;
+}
+
+.record-upload-form {
+    border: 1px dotted black;
+    border-radius: 5px;
+    margin: 5px 20px;
+    padding: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}

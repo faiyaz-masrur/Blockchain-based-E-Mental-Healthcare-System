@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import axios from "axios";
 import Layout from "../../components/Layout";
 import { Table, message } from "antd";
@@ -9,11 +9,12 @@ import { showLoading, hideLoading } from "../../redux/features/alertSlice";
 const AppointmentList = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const effectRun = useRef(true);
     const [appointments, setAppointments] = useState([]);
     const [requestedAppointments, setRequestedAppointments] = useState([]);
 
     //get requested appointments
-    const getRequestedAppointments = async () => {
+    const getRequestedAppointments = useCallback(async () => {
         try {
             const res = await axios.get(
                 "/api/v1/patient/get-all-requested-appointments",
@@ -28,16 +29,15 @@ const AppointmentList = () => {
                 setRequestedAppointments(res.data.requestedAppointments);
                 message.success(res.data.message);
             } else {
-                setRequestedAppointments([]);
                 message.error(res.data.message);
             }
         } catch (error) {
             console.log("Error: ", error);
         }
-    };
+    }, [setRequestedAppointments]);
 
     //get appointments
-    const getAppointments = async () => {
+    const getAppointments = useCallback(async () => {
         try {
             const res = await axios.get(
                 "/api/v1/patient/get-all-appointments",
@@ -57,7 +57,7 @@ const AppointmentList = () => {
         } catch (error) {
             console.log("Error: ", error);
         }
-    };
+    }, [setAppointments]);
 
     const cancelRequestedAppointmentHandler = async (record, type) => {
         try {
@@ -120,9 +120,15 @@ const AppointmentList = () => {
     };
 
     useEffect(() => {
-        getAppointments();
-        getRequestedAppointments();
-    }, []);
+        if (effectRun.current) {
+            getAppointments();
+            getRequestedAppointments();
+        }
+
+        return () => {
+            effectRun.current = false;
+        };
+    }, [getAppointments, getRequestedAppointments, effectRun]);
 
     const acceptedApointmentColumns = [
         {

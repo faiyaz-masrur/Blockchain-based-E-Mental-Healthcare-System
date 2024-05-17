@@ -2,6 +2,8 @@ const queryUser = require("../data/queryUser");
 const doctorModel = require("../models/doctorModel");
 const queryAppointment = require("../data/queryAppointment");
 const removeAppointment = require("../data/removeAppointment");
+const removeRecord = require("../data/removeRecord");
+const storeRecord = require("../data/storeRecord");
 const storeAppointment = require("../data/storeAppointment");
 const updateInfo = require("../data/updateInfo");
 const userModel = require("../models/userModel");
@@ -340,7 +342,7 @@ const cancleRequestedAppointmentController = async (req, res) => {
 const cancleAppointmentController = async (req, res) => {
     try {
         await removeAppointment.main(req.body);
-        if (req.body.type === "canceled") {
+        if (!req.body.type === "removed") {
             await updateInfo.main({
                 function: "changeAppointmentStatus",
                 key: req.body.doctorKey,
@@ -375,6 +377,92 @@ const cancleAppointmentController = async (req, res) => {
     }
 };
 
+const getAllSessionsController = async (req, res) => {
+    try {
+        const appointmentsStr = await queryAppointment.main({
+            key: req.body.userData.nid,
+        });
+        const appointments = JSON.parse(appointmentsStr);
+        const sessions = appointments.filter(
+            (appointment) => appointment.status === "on going"
+        );
+        res.status(200).send({
+            success: true,
+            message: "All Sessions",
+            sessions,
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).send({
+            success: false,
+            message: "Server error: Failed getting all sessions!",
+        });
+    }
+};
+
+const storeRecordController = async (req, res) => {
+    try {
+        await storeRecord.main({
+            doctorKey: req.body.doctorKey,
+            patientKey: req.body.userData.nid,
+            doctorName: req.body.doctorName,
+            disease: req.body.disease,
+            dataHash: req.body.dataHash,
+            fileName: req.body.fileName,
+        });
+        res.status(200).send({
+            success: true,
+            message: "Data uploaded successfully",
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).send({
+            success: false,
+            message: "Server error: Failed uploading data!",
+        });
+    }
+};
+
+const getAllRecordsController = async (req, res) => {
+    try {
+        const userStr = await queryUser.main({ key: req.body.userData.nid });
+        const user = JSON.parse(userStr);
+
+        res.status(200).send({
+            success: true,
+            message: "All medical records",
+            records: user.records,
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).send({
+            success: false,
+            message: "Server error: Failed getting medical records!",
+        });
+    }
+};
+
+const removeRecordController = async (req, res) => {
+    try {
+        await removeRecord.main({
+            doctorKey: req.body.doctorKey,
+            patientKey: req.body.userData.nid,
+            dataHash: req.body.dataHash,
+            createdAt: req.body.createdAt,
+        });
+        res.status(200).send({
+            success: true,
+            message: "Data removed successfully",
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).send({
+            success: false,
+            message: "Server error: Failed removing data!",
+        });
+    }
+};
+
 module.exports = {
     getDoctorByIdController,
     getAllDoctorsController,
@@ -384,4 +472,8 @@ module.exports = {
     getAllRequestedApointmentsController,
     cancleRequestedAppointmentController,
     cancleAppointmentController,
+    getAllSessionsController,
+    getAllRecordsController,
+    storeRecordController,
+    removeRecordController,
 };

@@ -21,8 +21,15 @@ import PatientAppointmentList from "./pages/patient/AppointmentList";
 import PatientRoute from "./components/PatientRoute";
 import BookingPage from "./pages/patient/BookingPage";
 import DoctorDetailsPatientView from "./pages/patient/DoctorDetails";
+import DoctorDetailsUserView from "./pages/DoctorDetails";
 import DoctorDetailsAdminView from "./pages/admin/DoctorDetails";
 import PatientProfile from "./pages/patient/Profile";
+import DoctorSessionList from "./pages/doctor/SessionList";
+import PatientSessionList from "./pages/patient/SessionList";
+import DoctorSessionRoom from "./pages/doctor/SessionRoom";
+import PatientSessionRoom from "./pages/patient/SessionRoom";
+import PatientData from "./pages/doctor/PatientData";
+import MedicalRecord from "./pages/patient/MedicalRecord";
 
 function App() {
     const { loading } = useSelector((state) => state.alerts);
@@ -33,167 +40,100 @@ function App() {
                     <Spinner />
                 ) : (
                     <Routes>
-                        <Route
-                            path="/"
-                            element={
-                                <ProtectedRoute>
-                                    <HomePage />
-                                </ProtectedRoute>
-                            }
-                        />
-
-                        <Route
-                            path="/notification"
-                            element={
-                                <ProtectedRoute>
-                                    <NotificationPage />
-                                </ProtectedRoute>
-                            }
-                        />
-                        <Route
-                            path="/patient/user-homepage"
-                            element={
-                                <ProtectedRoute>
-                                    <PatientRoute>
-                                        <DoctorsList />
-                                    </PatientRoute>
-                                </ProtectedRoute>
-                            }
-                        />
-                        <Route
-                            path="/patient/get-doctor-details/:doctorKey"
-                            element={
-                                <ProtectedRoute>
-                                    <PatientRoute>
-                                        <DoctorDetailsPatientView />
-                                    </PatientRoute>
-                                </ProtectedRoute>
-                            }
-                        />
-                        <Route
-                            path="/patient/book-appointemnt/:doctorKey"
-                            element={
-                                <ProtectedRoute>
-                                    <PatientRoute>
-                                        <BookingPage />
-                                    </PatientRoute>
-                                </ProtectedRoute>
-                            }
-                        />
-                        <Route
-                            path="/patient/appointments"
-                            element={
-                                <ProtectedRoute>
-                                    <PatientRoute>
-                                        <PatientAppointmentList />
-                                    </PatientRoute>
-                                </ProtectedRoute>
-                            }
-                        />
-                        <Route
-                            path="/patient/profile"
-                            element={
-                                <ProtectedRoute>
-                                    <PatientRoute>
-                                        <PatientProfile />
-                                    </PatientRoute>
-                                </ProtectedRoute>
-                            }
-                        />
-                        <Route
-                            path="/admin/admin-dashboard"
-                            element={
-                                <ProtectedRoute>
-                                    <AdminRoute>
-                                        <AppInfo />
-                                    </AdminRoute>
-                                </ProtectedRoute>
-                            }
-                        />
-                        <Route
-                            path="/admin/add-doctor"
-                            element={
-                                <ProtectedRoute>
-                                    <AdminRoute>
-                                        <AddDoctor />
-                                    </AdminRoute>
-                                </ProtectedRoute>
-                            }
-                        />
-                        <Route
-                            path="/admin/doctors"
-                            element={
-                                <ProtectedRoute>
-                                    <AdminRoute>
-                                        <Doctor />
-                                    </AdminRoute>
-                                </ProtectedRoute>
-                            }
-                        />
-                        <Route
-                            path="/admin/get-doctor-details/:doctorKey"
-                            element={
-                                <ProtectedRoute>
-                                    <AdminRoute>
-                                        <DoctorDetailsAdminView />
-                                    </AdminRoute>
-                                </ProtectedRoute>
-                            }
-                        />
-                        <Route
-                            path="/admin/patients"
-                            element={
-                                <ProtectedRoute>
-                                    <AdminRoute>
-                                        <Patient />
-                                    </AdminRoute>
-                                </ProtectedRoute>
-                            }
-                        />
-                        <Route
-                            path="/doctor/doctor-dashboard"
-                            element={
-                                <ProtectedRoute>
-                                    <DoctorRoute>
-                                        <DoctorAppointmentList />
-                                    </DoctorRoute>
-                                </ProtectedRoute>
-                            }
-                        />
-                        <Route
-                            path="/doctor/profile"
-                            element={
-                                <ProtectedRoute>
-                                    <DoctorRoute>
-                                        <DoctorProfile />
-                                    </DoctorRoute>
-                                </ProtectedRoute>
-                            }
-                        />
-                        <Route
-                            path="/apply-doctor"
-                            element={
-                                <PublicRoute>
-                                    <ApplyDoctor />
-                                </PublicRoute>
-                            }
-                        />
-                        <Route
-                            path="/login"
-                            element={
-                                <PublicRoute>
-                                    <Login />
-                                </PublicRoute>
-                            }
-                        />
-                        <Route
-                            path="/register"
-                            element={
-                                <PublicRoute>
-                                    <Register />
-                                </PublicRoute>
-                            }
-                        />
+                        <Route element={<ProtectedRoute />}>
+                            <Route path="/" element={<HomePage />} />
+                            <Route
+                                path="/notification"
+                                element={<NotificationPage />}
+                            />
+                            <Route
+                                path="/doctor-details/:doctorKey"
+                                element={<DoctorDetailsUserView />}
+                            />
+                        </Route>
+                        <Route element={<PatientRoute />}>
+                            <Route
+                                path="/patient/user-homepage"
+                                element={<DoctorsList />}
+                            />
+                            <Route
+                                path="/patient/get-doctor-details/:doctorKey"
+                                element={<DoctorDetailsPatientView />}
+                            />
+                            <Route
+                                path="/patient/book-appointemnt/:doctorKey"
+                                element={<BookingPage />}
+                            />
+                            <Route
+                                path="/patient/appointments"
+                                element={<PatientAppointmentList />}
+                            />
+                            <Route
+                                path="/patient/session"
+                                element={<PatientSessionList />}
+                            />
+                            <Route
+                                path="/patient/sessionroom/:roomId"
+                                element={<PatientSessionRoom />}
+                            />
+                            <Route
+                                path="/patient/medical-record"
+                                element={<MedicalRecord />}
+                            />
+                            <Route
+                                path="/patient/profile"
+                                element={<PatientProfile />}
+                            />
+                        </Route>
+                        <Route element={<AdminRoute />}>
+                            <Route
+                                path="/admin/admin-dashboard"
+                                element={<AppInfo />}
+                            />
+                            <Route
+                                path="/admin/add-doctor"
+                                element={<AddDoctor />}
+                            />
+                            <Route path="/admin/doctors" element={<Doctor />} />
+                            <Route
+                                path="/admin/get-doctor-details/:doctorKey"
+                                element={<DoctorDetailsAdminView />}
+                            />
+                            <Route
+                                path="/admin/patients"
+                                element={<Patient />}
+                            />
+                        </Route>
+                        <Route element={<DoctorRoute />}>
+                            <Route
+                                path="/doctor/doctor-dashboard"
+                                element={<DoctorAppointmentList />}
+                            />
+                            <Route
+                                path="/doctor/session"
+                                element={<DoctorSessionList />}
+                            />
+                            <Route
+                                path="/doctor/sessionroom/:roomId"
+                                element={<DoctorSessionRoom />}
+                            />
+                            <Route
+                                path="/doctor/patientdata/:patientKey"
+                                element={<PatientData />}
+                            />
+                            <Route
+                                path="/doctor/profile"
+                                element={<DoctorProfile />}
+                            />
+                        </Route>
+                        <Route element={<PublicRoute />}>
+                            <Route
+                                path="/apply-doctor"
+                                element={<ApplyDoctor />}
+                            />
+                            <Route path="/login" element={<Login />} />
+                            <Route path="/register" element={<Register />} />
+                        </Route>
                     </Routes>
                 )}
             </BrowserRouter>

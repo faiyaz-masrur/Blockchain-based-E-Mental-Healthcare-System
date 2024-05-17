@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import axios from "axios";
 import Layout from "../../components/Layout";
 import { Table, message } from "antd";
@@ -9,11 +9,12 @@ import { showLoading, hideLoading } from "../../redux/features/alertSlice";
 const Doctor = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
+    const effectRun = useRef(true);
     const [doctors, setDoctors] = useState([]);
     const [appliedDoctors, setAppliedDoctors] = useState([]);
 
     //get doctors
-    const getDoctors = async () => {
+    const getDoctors = useCallback(async () => {
         try {
             const res = await axios.get("/api/v1/admin/get-all-doctors", {
                 headers: {
@@ -30,7 +31,7 @@ const Doctor = () => {
         } catch (error) {
             console.log("Error: ", error);
         }
-    };
+    }, [setDoctors, setAppliedDoctors]);
 
     const changeStatusHandler = async (record, status) => {
         try {
@@ -61,8 +62,14 @@ const Doctor = () => {
     };
 
     useEffect(() => {
-        getDoctors();
-    }, []);
+        if (effectRun.current) {
+            getDoctors();
+        }
+
+        return () => {
+            effectRun.current = false;
+        };
+    }, [getDoctors, effectRun]);
     const approvedDoctorsColumns = [
         {
             title: "Name",

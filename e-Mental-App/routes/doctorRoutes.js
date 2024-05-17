@@ -6,7 +6,10 @@ const {
     getAllRequestedApointmentsController,
     actionRequestedAppointmentCntroller,
     cancelAppointmentCntroller,
-    changeAppointmentStatusHandler,
+    changeAppointmentStatusController,
+    getAllSessionsController,
+    storeRecordController,
+    getAllRecordsController,
 } = require("../controllers/doctorController");
 const checkDoctorMiddleware = require("../middlewares/checkDoctorMiddleware");
 
@@ -54,7 +57,28 @@ router.post(
     "/change-appointment-status",
     authMiddleware,
     checkDoctorMiddleware,
-    changeAppointmentStatusHandler
+    changeAppointmentStatusController
+);
+
+router.get(
+    "/get-all-sessions",
+    authMiddleware,
+    checkDoctorMiddleware,
+    getAllSessionsController
+);
+
+router.post(
+    "/store-record",
+    authMiddleware,
+    checkDoctorMiddleware,
+    storeRecordController
+);
+
+router.post(
+    "/get-all-records",
+    authMiddleware,
+    checkDoctorMiddleware,
+    getAllRecordsController
 );
 
 module.exports = router;

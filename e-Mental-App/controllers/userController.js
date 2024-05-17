@@ -256,6 +256,32 @@ const storeUsersToMDbController = async (req, res) => {
     }
 };
 
+const getDoctorByIdController = async (req, res) => {
+    try {
+        const strDoctor = await queryUser.main({ key: req.body.doctorKey });
+        if (strDoctor.length === 0) {
+            return res
+                .status(200)
+                .send({ success: false, message: "Doctor not found!" });
+        }
+        const doctor = JSON.parse(strDoctor);
+        doctor.password = null;
+        doctor.appointments = null;
+        doctor.records = null;
+        res.status(200).send({
+            success: true,
+            message: "Doctor info fetched",
+            doctor,
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).send({
+            success: false,
+            message: "Server error: Could not get the doctor!",
+        });
+    }
+};
+
 module.exports = {
     loginController,
     registerController,
@@ -265,4 +291,5 @@ module.exports = {
     markAllNotificationsController,
     deleteAllNotificationsController,
     storeUsersToMDbController,
+    getDoctorByIdController,
 };

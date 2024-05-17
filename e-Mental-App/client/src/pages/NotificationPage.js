@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import Layout from "./../components/Layout";
 import { Tabs, message } from "antd";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { showLoading, hideLoading } from "../redux/features/alertSlice";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -9,10 +9,11 @@ import { useNavigate } from "react-router-dom";
 const NotificationPage = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const effectRun = useRef(true);
     const [unSeenNotifications, setUnSeenNotifications] = useState([]);
     const [seenNotifications, setSeenNotifications] = useState([]);
 
-    const getNotifications = async () => {
+    const getNotifications = useCallback(async () => {
         try {
             const res = await axios.get("/api/v1/user/get-all-notifications", {
                 headers: {
@@ -29,7 +30,7 @@ const NotificationPage = () => {
         } catch (error) {
             console.log("Error: ", error);
         }
-    };
+    }, [setUnSeenNotifications, setSeenNotifications]);
 
     const handleMarkAllSeen = async () => {
         try {
@@ -83,8 +84,14 @@ const NotificationPage = () => {
     };
 
     useEffect(() => {
-        getNotifications();
-    }, []);
+        if (effectRun.current) {
+            getNotifications();
+        }
+
+        return () => {
+            effectRun.current = false;
+        };
+    }, [getNotifications, effectRun]);
     return (
         <Layout>
             <h3 className="p-2 text-center">Notification Page</h3>

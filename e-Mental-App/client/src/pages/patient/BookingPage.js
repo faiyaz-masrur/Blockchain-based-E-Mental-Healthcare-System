@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
 import { DatePicker, TimePicker, message } from "antd";
@@ -11,6 +11,7 @@ const BookingPage = () => {
     const params = useParams();
     const navigate = useNavigate();
     const dispatch = useDispatch();
+    const effectRun = useRef(true);
     const { user } = useSelector((state) => state.user);
     const [doctor, setDoctor] = useState(null);
     const [toViewDate, setToViewDate] = useState(null);
@@ -31,7 +32,7 @@ const BookingPage = () => {
     };
 
     //get doctor details
-    const getDoctor = async () => {
+    const getDoctor = useCallback(async () => {
         try {
             const res = await axios.post(
                 "/api/v1/patient/get-doctor-byId",
@@ -55,7 +56,7 @@ const BookingPage = () => {
         } catch (error) {
             console.log("Error: ", error);
         }
-    };
+    }, [params, setDoctor]);
 
     const handleBooking = async (values) => {
         try {
@@ -131,8 +132,14 @@ const BookingPage = () => {
     };
 
     useEffect(() => {
-        getDoctor();
-    }, []);
+        if (effectRun.current) {
+            getDoctor();
+        }
+
+        return () => {
+            effectRun.current = false;
+        };
+    }, [getDoctor, effectRun]);
 
     return (
         <Layout>

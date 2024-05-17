@@ -1,12 +1,9 @@
 import React from "react";
-import axios from "axios";
 import Layout from "../../components/Layout";
-import { useDispatch, useSelector } from "react-redux";
-import { message, Col, Row } from "antd";
-import { showLoading, hideLoading } from "../../redux/features/alertSlice";
+import { useSelector } from "react-redux";
+import { Col, Row } from "antd";
 
 const Profile = () => {
-    const dispatch = useDispatch();
     const { user } = useSelector((state) => state.user);
 
     const deleteAccountHandler = async () => {

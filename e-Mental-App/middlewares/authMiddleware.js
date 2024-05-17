@@ -26,6 +26,7 @@ module.exports = async (req, res, next) => {
                 }
                 user.password = null;
                 user.appointments = null;
+                user.records = null;
                 req.body.userData = user;
                 next();
             }

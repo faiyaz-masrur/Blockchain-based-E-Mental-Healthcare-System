@@ -8,6 +8,7 @@ const {
     markAllNotificationsController,
     deleteAllNotificationsController,
     storeUsersToMDbController,
+    getDoctorByIdController,
 } = require("../controllers/userController");
 const authMiddleware = require("../middlewares/authMiddleware");
 
@@ -49,5 +50,7 @@ router.post(
     authMiddleware,
     deleteAllNotificationsController
 );
+
+router.post("/get-doctor-byId", authMiddleware, getDoctorByIdController);
 
 module.exports = router;

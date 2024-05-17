@@ -11,18 +11,18 @@ export const patientMenu = [
     },
     {
         name: "Session",
-        path: "/session",
+        path: "/patient/session",
         icon: "fa-solid fa-video",
+    },
+    {
+        name: "Medical Data",
+        path: "/patient/medical-record",
+        icon: "fa-solid fa-file-medical",
     },
     {
         name: "Access Control",
         path: "/accessControl",
         icon: "fa-solid fa-gamepad",
-    },
-    {
-        name: "Medical Data",
-        path: "/medicalData",
-        icon: "fa-solid fa-file-medical",
     },
     {
         name: "Profile",
@@ -40,7 +40,7 @@ export const doctorMenu = [
     },
     {
         name: "Session",
-        path: "/session",
+        path: "/doctor/session",
         icon: "fa-solid fa-user-doctor",
     },
     {

@@ -81,14 +81,19 @@ const Login = () => {
                             Apply Doctor
                         </Link>
                     </div>
-                    <div className="store-users-mdb-link">
+                    <div className="apply-doctor-link">
+                        <Link to="/apply-researcher" className="m-2">
+                            Apply Researcher
+                        </Link>
+                    </div>
+                    {/* <div className="store-users-mdb-link">
                         <button
                             className="btn btn-link"
                             onClick={storeUserInfoHandler}
                         >
                             Store User Info
                         </button>
-                    </div>
+                    </div> */}
                 </div>
             </div>
         </>

@@ -1,6 +1,11 @@
 import React from "react";
 import "../styles/LayoutStyles.css";
-import { adminMenu, patientMenu, doctorMenu } from "../data/data";
+import {
+    adminMenu,
+    patientMenu,
+    doctorMenu,
+    researcherMenu,
+} from "../data/data";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { message, Badge } from "antd";
@@ -28,6 +33,8 @@ const Layout = ({ children }) => {
             ? doctorMenu
             : user?.userType === "patient"
             ? patientMenu
+            : user?.userType === "researcher"
+            ? researcherMenu
             : [];
     return (
         <>

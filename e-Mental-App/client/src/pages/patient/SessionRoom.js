@@ -6,8 +6,8 @@ const SessionRoom = () => {
     const { roomId } = useParams();
 
     const session = async (element) => {
-        const userNid = "00000000";
-        const userName = "Empty";
+        const userNid = "3454645";
+        const userName = "dfgef";
         const appID = 759841595;
         const serverSecret = "b48499a98bd3cc41ff2a1cfc073a07fa";
         const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(

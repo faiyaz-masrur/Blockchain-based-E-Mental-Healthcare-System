@@ -6,24 +6,27 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { showLoading, hideLoading } from "../../redux/features/alertSlice";
 
-const Doctor = () => {
+const Researcher = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const effectRun = useRef(true);
-    const [doctors, setDoctors] = useState([]);
-    const [appliedDoctors, setAppliedDoctors] = useState([]);
+    const [researchers, setResearchers] = useState([]);
+    const [appliedResearchers, setAppliedResearchers] = useState([]);
 
     //get doctors
-    const getDoctors = useCallback(async () => {
+    const getAppliedResearcher = useCallback(async () => {
         try {
-            const res = await axios.get("/api/v1/admin/get-all-doctors", {
-                headers: {
-                    Authorization: "Bearer " + localStorage.getItem("token"),
-                },
-            });
+            const res = await axios.get(
+                "/api/v1/admin/get-all-applied-researchers",
+                {
+                    headers: {
+                        Authorization:
+                            "Bearer " + localStorage.getItem("token"),
+                    },
+                }
+            );
             if (res.data.success) {
-                setDoctors(res.data.data);
-                setAppliedDoctors(res.data.requestData);
+                setAppliedResearchers(res.data.appliedResearchers);
                 message.success(res.data.message);
             } else {
                 message.error(res.data.message);
@@ -31,15 +34,34 @@ const Doctor = () => {
         } catch (error) {
             console.log("Error: ", error);
         }
-    }, [setDoctors, setAppliedDoctors]);
+    }, [setAppliedResearchers]);
+
+    //get doctors
+    const getResearcher = useCallback(async () => {
+        try {
+            const res = await axios.get("/api/v1/admin/get-all-researchers", {
+                headers: {
+                    Authorization: "Bearer " + localStorage.getItem("token"),
+                },
+            });
+            if (res.data.success) {
+                setResearchers(res.data.researchers);
+                message.success(res.data.message);
+            } else {
+                message.error(res.data.message);
+            }
+        } catch (error) {
+            console.log("Error: ", error);
+        }
+    }, [setResearchers]);
 
     const changeStatusHandler = async (record, status) => {
         try {
             dispatch(showLoading());
             const res = await axios.post(
-                "/api/v1/admin/change-user-status",
+                "/api/v1/admin/change-researcher-status",
                 {
-                    userKey: record.nid,
+                    key: record.nid,
                     newStatus: status,
                 },
                 {
@@ -63,25 +85,26 @@ const Doctor = () => {
 
     useEffect(() => {
         if (effectRun.current) {
-            getDoctors();
+            getAppliedResearcher();
+            getResearcher();
         }
 
         return () => {
             effectRun.current = false;
         };
-    }, [getDoctors, effectRun]);
-    const approvedDoctorsColumns = [
+    }, [getResearcher, getAppliedResearcher, effectRun]);
+    const acceptedResearchersColumn = [
         {
             title: "Name",
             dataIndex: "name",
         },
         {
-            title: "Specialization",
-            dataIndex: "specialization",
+            title: "Email",
+            dataIndex: "email",
         },
         {
-            title: "Experience",
-            dataIndex: "experience",
+            title: "Phone",
+            dataIndex: "phone",
         },
         {
             title: "Type",
@@ -103,7 +126,9 @@ const Doctor = () => {
                     <button
                         className="btn btn-primary m-1"
                         onClick={() =>
-                            navigate(`/admin/get-doctor-details/${record.nid}`)
+                            navigate(
+                                `/admin/get-researcher-details/${record.nid}`
+                            )
                         }
                     >
                         View
@@ -131,18 +156,18 @@ const Doctor = () => {
             ),
         },
     ];
-    const requestedDoctorsColumns = [
+    const appliedResearchersColumn = [
         {
             title: "Name",
             dataIndex: "name",
         },
         {
-            title: "Specialization",
-            dataIndex: "specialization",
+            title: "Degree",
+            dataIndex: "degree",
         },
         {
-            title: "Experience",
-            dataIndex: "experience",
+            title: "Institute",
+            dataIndex: "address",
         },
         {
             title: "Type",
@@ -156,7 +181,9 @@ const Doctor = () => {
                     <button
                         className="btn btn-primary m-1"
                         onClick={() =>
-                            navigate(`/admin/get-doctor-details/${record.nid}`)
+                            navigate(
+                                `/admin/get-researcher-details/${record.nid}`
+                            )
                         }
                     >
                         View
@@ -179,31 +206,33 @@ const Doctor = () => {
     ];
     return (
         <Layout>
-            <h3 className="p-2 text-center">Doctors List</h3>
-            {appliedDoctors.length !== 0 ? (
+            <h3 className="p-2 text-center">
+                Researcher List <hr />{" "}
+            </h3>
+            {appliedResearchers.length === 0 ? (
                 <>
-                    <h6 className="m-2">Doctors Request:</h6>
+                    <h6 className="m-2">Accepted Researcher:</h6>
                     <Table
-                        columns={requestedDoctorsColumns}
-                        dataSource={appliedDoctors}
+                        columns={acceptedResearchersColumn}
+                        dataSource={researchers}
                     />
-                    <h6 className="m-2">Approved Doctors:</h6>
+                    <h6 className="m-2">Pending Requests:</h6>
                     <Table
-                        columns={approvedDoctorsColumns}
-                        dataSource={doctors}
+                        columns={appliedResearchersColumn}
+                        dataSource={appliedResearchers}
                     />
                 </>
             ) : (
                 <>
-                    <h6 className="m-2">Approved Doctors:</h6>
+                    <h6 className="m-2">Pending Requests:</h6>
                     <Table
-                        columns={approvedDoctorsColumns}
-                        dataSource={doctors}
+                        columns={appliedResearchersColumn}
+                        dataSource={appliedResearchers}
                     />
-                    <h6 className="m-2">Doctors Request:</h6>
+                    <h6 className="m-2">Accepted Researcher:</h6>
                     <Table
-                        columns={requestedDoctorsColumns}
-                        dataSource={appliedDoctors}
+                        columns={acceptedResearchersColumn}
+                        dataSource={researchers}
                     />
                 </>
             )}
@@ -211,4 +240,4 @@ const Doctor = () => {
     );
 };
 
-export default Doctor;
+export default Researcher;

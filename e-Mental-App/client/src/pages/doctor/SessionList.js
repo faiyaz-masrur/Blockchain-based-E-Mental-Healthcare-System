@@ -63,7 +63,7 @@ const SessionList = () => {
 
                 const reader = new FileReader();
 
-                reader.readAsText(file);
+                reader.readAsDataURL(file);
                 reader.onload = async () => {
                     const encryptedFile = crypto.AES.encrypt(
                         reader.result,
@@ -153,6 +153,34 @@ const SessionList = () => {
         }
     };
 
+    const checkRecordAccessPermissionHandler = async (record) => {
+        try {
+            dispatch(showLoading());
+            const res = await axios.post(
+                "/api/v1/doctor/check-access-permission",
+                {
+                    patientKey: record.patientKey,
+                },
+                {
+                    headers: {
+                        Authorization:
+                            "Bearer " + localStorage.getItem("token"),
+                    },
+                }
+            );
+            dispatch(hideLoading());
+            if (res.data.success) {
+                navigate(`/doctor/patientdata/${record.patientKey}`);
+            } else {
+                message.error(res.data.message);
+            }
+        } catch (error) {
+            dispatch(hideLoading());
+            console.log("Error: ", error);
+            message.error("Something went wrong!");
+        }
+    };
+
     const joinRoomHandler = useCallback(({ roomId }) => {
         window.open(
             `${window.location.origin}/doctor/sessionroom/${roomId}`,
@@ -211,9 +239,7 @@ const SessionList = () => {
                     <button
                         className="btn btn-secondary m-1"
                         onClick={() => {
-                            navigate(
-                                `/doctor/patientdata/${record.patientKey}`
-                            );
+                            checkRecordAccessPermissionHandler(record);
                         }}
                     >
                         Records

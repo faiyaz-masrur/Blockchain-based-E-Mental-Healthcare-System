@@ -54,28 +54,18 @@ async function main(params) {
         // Get the contract from the network.
         const contract = network.getContract("fabMed");
 
-        const currentTime = new Date();
-
         // gathering payload data
-        const doctorKey = params.doctorKey ? params.doctorKey : "";
+        const doctorKey = params.doctorKey;
         const patientKey = params.patientKey;
-        const doctorName = params.doctorName;
-        const disease = params.disease;
-        const dataHash = params.dataHash;
-        const fileName = params.fileName;
-        const createdAt = `${currentTime.getDate()}/${
-            currentTime.getMonth() + 1
-        }/${currentTime.getFullYear()}, ${currentTime.getHours()}:${currentTime.getMinutes()}:${currentTime.getSeconds()}`;
+        const newStatus = params.newStatus;
+        const createdAt = params.createdAt;
 
         // Submit the specified transaction.
         await contract.submitTransaction(
-            "storeRecord",
+            "changeAppointmentStatus",
             `${doctorKey}`,
             `${patientKey}`,
-            `${doctorName}`,
-            `${disease}`,
-            `${dataHash}`,
-            `${fileName}`,
+            `${newStatus}`,
             `${createdAt}`
         );
         console.log("Transaction has been submitted");

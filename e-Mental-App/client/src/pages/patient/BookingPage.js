@@ -76,6 +76,8 @@ const BookingPage = () => {
                     patientName: user.name,
                     patientEmail: user.email,
                     patientPhone: user.phone,
+                    fees: doctor.fees,
+                    specialization: doctor.specialization,
                     duration: parseInt(doctor.consultationDuration) - 1,
                     date: toStoreDate,
                     startTime: toStoreTime,
@@ -87,11 +89,12 @@ const BookingPage = () => {
                     },
                 }
             );
-            dispatch(hideLoading());
             if (res.data.success) {
-                message.success(res.data.message);
-                navigate("/patient/appointments");
+                if (res.data.session.url) {
+                    window.location.href = res.data.session.url;
+                }
             } else {
+                dispatch(hideLoading());
                 message.error(res.data.message);
             }
         } catch (error) {
@@ -150,6 +153,7 @@ const BookingPage = () => {
                 {doctor && (
                     <div>
                         <h4>Dr. {doctor.name}</h4>
+                        <h6>{doctor.specialization}</h6>
                         <h6>Fees: {doctor.fees}</h6>
                         <h6>
                             Consultation Time: {doctor.consultationStartTime} -{" "}

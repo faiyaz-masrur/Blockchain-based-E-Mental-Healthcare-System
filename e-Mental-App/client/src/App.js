@@ -30,6 +30,17 @@ import DoctorSessionRoom from "./pages/doctor/SessionRoom";
 import PatientSessionRoom from "./pages/patient/SessionRoom";
 import PatientData from "./pages/doctor/PatientData";
 import MedicalRecord from "./pages/patient/MedicalRecord";
+import AccessControle from "./pages/patient/AccessControle";
+import ApplyResearcher from "./pages/ApplyResearcher";
+import Researcher from "./pages/admin/Researcher";
+import ResearcherDetailsAdminView from "./pages/admin/ResearcherDetails";
+import PatientListResearcherView from "./pages/researcher/PatientList";
+import ResearcherRoute from "./components/ResearcherRoute";
+import PatientDataRessearcherView from "./pages/researcher/PatientData";
+import ResearcherProfile from "./pages/researcher/Profile";
+import AdminProfile from "./pages/admin/Profile";
+import ConfirmAppointment from "./components/ConfirmAppointment";
+import PaymentFailed from "./components/PaymentFailed";
 
 function App() {
     const { loading } = useSelector((state) => state.alerts);
@@ -65,6 +76,14 @@ function App() {
                                 element={<BookingPage />}
                             />
                             <Route
+                                path="/patient/confirm-appointment/:appointmentId"
+                                element={<ConfirmAppointment />}
+                            />
+                            <Route
+                                path="/patient/appointment-failed/:doctorKey"
+                                element={<PaymentFailed />}
+                            />
+                            <Route
                                 path="/patient/appointments"
                                 element={<PatientAppointmentList />}
                             />
@@ -79,6 +98,10 @@ function App() {
                             <Route
                                 path="/patient/medical-record"
                                 element={<MedicalRecord />}
+                            />
+                            <Route
+                                path="/patient/access-controle"
+                                element={<AccessControle />}
                             />
                             <Route
                                 path="/patient/profile"
@@ -102,6 +125,18 @@ function App() {
                             <Route
                                 path="/admin/patients"
                                 element={<Patient />}
+                            />
+                            <Route
+                                path="/admin/researchers"
+                                element={<Researcher />}
+                            />
+                            <Route
+                                path="/admin/get-researcher-details/:researcherKey"
+                                element={<ResearcherDetailsAdminView />}
+                            />
+                            <Route
+                                path="/admin/profile"
+                                element={<AdminProfile />}
                             />
                         </Route>
                         <Route element={<DoctorRoute />}>
@@ -131,8 +166,26 @@ function App() {
                                 path="/apply-doctor"
                                 element={<ApplyDoctor />}
                             />
+                            <Route
+                                path="/apply-researcher"
+                                element={<ApplyResearcher />}
+                            />
                             <Route path="/login" element={<Login />} />
                             <Route path="/register" element={<Register />} />
+                        </Route>
+                        <Route element={<ResearcherRoute />}>
+                            <Route
+                                path="/researcher/researcher-dashboard"
+                                element={<PatientListResearcherView />}
+                            />
+                            <Route
+                                path="/researcher/record/:patientKey"
+                                element={<PatientDataRessearcherView />}
+                            />
+                            <Route
+                                path="/researcher/profile"
+                                element={<ResearcherProfile />}
+                            />
                         </Route>
                     </Routes>
                 )}

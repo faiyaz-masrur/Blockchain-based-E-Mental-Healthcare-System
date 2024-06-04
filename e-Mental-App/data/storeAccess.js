@@ -57,25 +57,23 @@ async function main(params) {
         const currentTime = new Date();
 
         // gathering payload data
-        const doctorKey = params.doctorKey ? params.doctorKey : "";
+        const userKey = params.userKey;
         const patientKey = params.patientKey;
-        const doctorName = params.doctorName;
-        const disease = params.disease;
-        const dataHash = params.dataHash;
-        const fileName = params.fileName;
+        const userName = params.userName;
+        const address = params.address;
+        const usertype = params.userType;
         const createdAt = `${currentTime.getDate()}/${
             currentTime.getMonth() + 1
         }/${currentTime.getFullYear()}, ${currentTime.getHours()}:${currentTime.getMinutes()}:${currentTime.getSeconds()}`;
 
         // Submit the specified transaction.
         await contract.submitTransaction(
-            "storeRecord",
-            `${doctorKey}`,
+            "storeAccess",
+            `${userKey}`,
             `${patientKey}`,
-            `${doctorName}`,
-            `${disease}`,
-            `${dataHash}`,
-            `${fileName}`,
+            `${userName}`,
+            `${address}`,
+            `${usertype}`,
             `${createdAt}`
         );
         console.log("Transaction has been submitted");

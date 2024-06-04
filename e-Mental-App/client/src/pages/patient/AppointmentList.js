@@ -4,6 +4,7 @@ import Layout from "../../components/Layout";
 import { Table, message } from "antd";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { FaStar } from "react-icons/fa";
 import { showLoading, hideLoading } from "../../redux/features/alertSlice";
 
 const AppointmentList = () => {
@@ -12,6 +13,10 @@ const AppointmentList = () => {
     const effectRun = useRef(true);
     const [appointments, setAppointments] = useState([]);
     const [requestedAppointments, setRequestedAppointments] = useState([]);
+    const [doctorKey, setDoctorKey] = useState("");
+    const [createdAt, setCreatedAt] = useState("");
+    const [ratingView, setRatingView] = useState(false);
+    const [rating, setRating] = useState(null);
 
     //get requested appointments
     const getRequestedAppointments = useCallback(async () => {
@@ -119,6 +124,35 @@ const AppointmentList = () => {
         }
     };
 
+    const submitRatingHandler = async () => {
+        try {
+            dispatch(showLoading());
+            const res = await axios.post(
+                "/api/v1/patient/submit-rating",
+                {
+                    doctorKey,
+                    createdAt,
+                    rating,
+                },
+                {
+                    headers: {
+                        Authorization:
+                            "Bearer " + localStorage.getItem("token"),
+                    },
+                }
+            );
+            dispatch(hideLoading());
+            if (res.data.success) {
+                message.success(res.data.message);
+            } else {
+                message.error(res.data.message);
+            }
+        } catch (error) {
+            dispatch(hideLoading());
+            console.log("Error: ", error);
+        }
+    };
+
     useEffect(() => {
         if (effectRun.current) {
             getAppointments();
@@ -178,6 +212,21 @@ const AppointmentList = () => {
                         onClick={() => navigate("/patient/session")}
                     >
                         Session
+                    </button>
+                ) : record.status === "ended" ? (
+                    <button
+                        className="btn btn-secondary"
+                        onClick={() => {
+                            if (!ratingView) {
+                                setRatingView(true);
+                                setDoctorKey(record.doctorKey);
+                                setCreatedAt(record.createdAt);
+                            } else {
+                                setRatingView(false);
+                            }
+                        }}
+                    >
+                        Give Ratings
                     </button>
                 ) : (
                     <button
@@ -248,6 +297,41 @@ const AppointmentList = () => {
                         columns={acceptedApointmentColumns}
                         dataSource={appointments}
                     />
+                    {ratingView && (
+                        <div className="d-flex justify-content-center m-2">
+                            <h6 className="rating-label">Rate:</h6>
+                            {[...Array(5)].map((star, i) => {
+                                const ratingValue = i + 1;
+                                return (
+                                    <label>
+                                        <input
+                                            type="radio"
+                                            name="rating"
+                                            value={ratingValue}
+                                            onClick={() =>
+                                                setRating(ratingValue)
+                                            }
+                                        />
+                                        <FaStar
+                                            className="star"
+                                            color={
+                                                ratingValue <= rating
+                                                    ? "#ffc107"
+                                                    : "#e4e5e9"
+                                            }
+                                            size={30}
+                                        />
+                                    </label>
+                                );
+                            })}
+                            <button
+                                className="rating-btn"
+                                onClick={submitRatingHandler}
+                            >
+                                Submit
+                            </button>
+                        </div>
+                    )}
                     <h6 className="m-2">Pending Appointments:</h6>
                     <Table
                         columns={requestedAppointmentColumns}
@@ -266,6 +350,41 @@ const AppointmentList = () => {
                         columns={acceptedApointmentColumns}
                         dataSource={appointments}
                     />
+                    {ratingView && (
+                        <div className="d-flex justify-content-center m-2">
+                            <h6 className="rating-label">Rate:</h6>
+                            {[...Array(5)].map((star, i) => {
+                                const ratingValue = i + 1;
+                                return (
+                                    <label>
+                                        <input
+                                            type="radio"
+                                            name="rating"
+                                            value={ratingValue}
+                                            onClick={() =>
+                                                setRating(ratingValue)
+                                            }
+                                        />
+                                        <FaStar
+                                            className="star"
+                                            color={
+                                                ratingValue <= rating
+                                                    ? "#ffc107"
+                                                    : "#e4e5e9"
+                                            }
+                                            size={30}
+                                        />
+                                    </label>
+                                );
+                            })}
+                            <button
+                                className="rating-btn"
+                                onClick={submitRatingHandler}
+                            >
+                                Submit
+                            </button>
+                        </div>
+                    )}
                 </>
             )}
         </Layout>

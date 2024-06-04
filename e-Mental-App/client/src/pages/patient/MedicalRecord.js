@@ -63,7 +63,7 @@ const MedicalRecord = () => {
 
                 const reader = new FileReader();
 
-                reader.readAsText(file);
+                reader.readAsDataURL(file);
                 reader.onload = async () => {
                     const encryptedFile = crypto.AES.encrypt(
                         reader.result,
@@ -126,26 +126,6 @@ const MedicalRecord = () => {
     const downloadRecordHandler = useCallback(async (record) => {
         try {
             message.success("Processing for download");
-            console.log(record.fileName);
-            const extention = record.fileName.split(".")[1];
-            let fileType;
-            if (extention === "png") {
-                fileType = "image/png";
-            } else if (extention === "jpg" || extention === "jpeg") {
-                fileType = "image/jpeg";
-            } else if (extention === "webp") {
-                fileType = "image/webp";
-            } else if (extention === "apng") {
-                fileType = "image/apng";
-            } else if (extention === "pdf") {
-                fileType = "application/pdf";
-            } else if (extention === "doc" || extention === "dot") {
-                fileType = "application/msword";
-            } else if (extention === "txt") {
-                fileType = "text/plain";
-            } else {
-                fileType = "multipart/form-data";
-            }
             const res = await axios({
                 method: "get",
                 url: `https://gateway.pinata.cloud/ipfs/${record.dataHash}`,
@@ -153,12 +133,10 @@ const MedicalRecord = () => {
             const decryptedFile = crypto.AES.decrypt(
                 res.data,
                 process.env.REACT_APP_SECRET_KEY
-            ).toString(crypto.enc.Utf8);
-            const blob = new Blob([decryptedFile], {
-                type: fileType,
-            });
+            ).toString(crypto.enc.Base64);
+            const byteCharacter = atob(decryptedFile);
             const downloadLink = document.createElement("a");
-            downloadLink.href = URL.createObjectURL(blob);
+            downloadLink.href = byteCharacter;
             downloadLink.setAttribute("download", record.fileName);
             downloadLink.click();
         } catch (error) {
@@ -167,35 +145,38 @@ const MedicalRecord = () => {
         }
     }, []);
 
-    const removeRecordHandler = useCallback(async (record) => {
-        try {
-            dispatch(showLoading());
-            const res = await axios.post(
-                "/api/v1/patient/remove-record",
-                {
-                    doctorKey: record.doctorKey,
-                    dataHash: record.dataHash,
-                    createdAt: record.createdAt,
-                },
-                {
-                    headers: {
-                        Authorization:
-                            "Bearer " + localStorage.getItem("token"),
+    const removeRecordHandler = useCallback(
+        async (record) => {
+            try {
+                dispatch(showLoading());
+                const res = await axios.post(
+                    "/api/v1/patient/remove-record",
+                    {
+                        doctorKey: record.doctorKey,
+                        dataHash: record.dataHash,
+                        createdAt: record.createdAt,
                     },
+                    {
+                        headers: {
+                            Authorization:
+                                "Bearer " + localStorage.getItem("token"),
+                        },
+                    }
+                );
+                dispatch(hideLoading());
+                if (res.data.success) {
+                    message.success(res.data.message);
+                } else {
+                    message.error(res.data.message);
                 }
-            );
-            dispatch(hideLoading());
-            if (res.data.success) {
-                message.success(res.data.message);
-            } else {
-                message.error(res.data.message);
+            } catch (error) {
+                console.log("Error: ", error);
+                dispatch(hideLoading());
+                message.error("Something went wrong!");
             }
-        } catch (error) {
-            console.log("Error: ", error);
-            dispatch(hideLoading());
-            message.error("Something went wrong!");
-        }
-    }, []);
+        },
+        [dispatch]
+    );
 
     useEffect(() => {
         if (effectRun.current) {

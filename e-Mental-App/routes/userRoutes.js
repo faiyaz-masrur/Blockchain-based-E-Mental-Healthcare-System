@@ -9,6 +9,7 @@ const {
     deleteAllNotificationsController,
     storeUsersToMDbController,
     getDoctorByIdController,
+    applyResearcherController,
 } = require("../controllers/userController");
 const authMiddleware = require("../middlewares/authMiddleware");
 
@@ -27,6 +28,9 @@ router.post("/register", registerController);
 
 // apply doctor post route
 router.post("/apply-doctor", applyDoctorController);
+
+// apply researcher post route
+router.post("/apply-researcher", applyResearcherController);
 
 // authentication post route
 router.post("/getUserData", authMiddleware, getUserDataController);

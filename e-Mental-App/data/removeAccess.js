@@ -54,36 +54,21 @@ async function main(params) {
         // Get the contract from the network.
         const contract = network.getContract("fabMed");
 
-        const currentTime = new Date();
-
-        // gathering payload data
-        const doctorKey = params.doctorKey ? params.doctorKey : "";
+        const userKey = params.userKey;
         const patientKey = params.patientKey;
-        const doctorName = params.doctorName;
-        const disease = params.disease;
-        const dataHash = params.dataHash;
-        const fileName = params.fileName;
-        const createdAt = `${currentTime.getDate()}/${
-            currentTime.getMonth() + 1
-        }/${currentTime.getFullYear()}, ${currentTime.getHours()}:${currentTime.getMinutes()}:${currentTime.getSeconds()}`;
 
         // Submit the specified transaction.
         await contract.submitTransaction(
-            "storeRecord",
-            `${doctorKey}`,
-            `${patientKey}`,
-            `${doctorName}`,
-            `${disease}`,
-            `${dataHash}`,
-            `${fileName}`,
-            `${createdAt}`
+            "removeAccess",
+            `${userKey}`,
+            `${patientKey}`
         );
         console.log("Transaction has been submitted");
 
         // Disconnect from the gateway.
         await gateway.disconnect();
     } catch (error) {
-        console.error(`Failed to create transaction: ${error}`);
+        console.error(`Failed to change owner transaction: ${error}`);
         return error;
     }
 }

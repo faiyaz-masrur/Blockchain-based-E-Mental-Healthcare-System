@@ -7,6 +7,11 @@ const {
     getAllPatientsController,
     changeUserStatusController,
     getDoctorByIdController,
+    getAllAppliedResearchersController,
+    getAllResearchersController,
+    changeResearcherStatusController,
+    getResearcherByIdController,
+    getAppInfoController,
 } = require("../controllers/adminController");
 
 // router object
@@ -51,6 +56,41 @@ router.post(
     authMiddleware,
     checkAdminMiddleware,
     getDoctorByIdController
+);
+
+router.post(
+    "/get-researcher-byId",
+    authMiddleware,
+    checkAdminMiddleware,
+    getResearcherByIdController
+);
+
+router.get(
+    "/get-all-applied-researchers",
+    authMiddleware,
+    checkAdminMiddleware,
+    getAllAppliedResearchersController
+);
+
+router.get(
+    "/get-all-researchers",
+    authMiddleware,
+    checkAdminMiddleware,
+    getAllResearchersController
+);
+
+router.post(
+    "/change-researcher-status",
+    authMiddleware,
+    checkAdminMiddleware,
+    changeResearcherStatusController
+);
+
+router.get(
+    "/get-app-info",
+    authMiddleware,
+    checkAdminMiddleware,
+    getAppInfoController
 );
 
 module.exports = router;

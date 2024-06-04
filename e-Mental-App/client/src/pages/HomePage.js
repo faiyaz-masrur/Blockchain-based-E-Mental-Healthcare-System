@@ -12,6 +12,8 @@ const HomePage = () => {
         return <Navigate to="/admin/admin-dashboard" />;
     } else if (user?.userType === "doctor") {
         return <Navigate to="/doctor/doctor-dashboard" />;
+    } else if (user?.userType === "researcher") {
+        return <Navigate to="/researcher/researcher-dashboard" />;
     } else {
         return (
             <Layout>

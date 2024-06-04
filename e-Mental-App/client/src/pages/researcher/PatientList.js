@@ -4,8 +4,10 @@ import Layout from "../../components/Layout";
 import { Table, message } from "antd";
 import { useDispatch } from "react-redux";
 import { showLoading, hideLoading } from "../../redux/features/alertSlice";
+import { useNavigate } from "react-router-dom";
 
-const Patient = () => {
+const PatientList = () => {
+    const navigate = useNavigate();
     const dispatch = useDispatch();
     const effectRun = useRef(true);
     const [patients, setPatients] = useState([]);
@@ -13,13 +15,13 @@ const Patient = () => {
     //get patients
     const getPatients = useCallback(async () => {
         try {
-            const res = await axios.get("/api/v1/admin/get-all-patients", {
+            const res = await axios.get("/api/v1/researcher/get-all-patients", {
                 headers: {
                     Authorization: "Bearer " + localStorage.getItem("token"),
                 },
             });
             if (res.data.success) {
-                setPatients(res.data.data);
+                setPatients(res.data.patients);
                 message.success(res.data.message);
             } else {
                 message.error(res.data.message);
@@ -29,12 +31,14 @@ const Patient = () => {
         }
     }, [setPatients]);
 
-    const changeStatusHandler = async (record, status) => {
+    const checkRecordAccessPermissionHandler = async (record) => {
         try {
             dispatch(showLoading());
             const res = await axios.post(
-                "/api/v1/admin/change-user-status",
-                { userKey: record.nid, newStatus: status },
+                "/api/v1/researcher/check-access-permission",
+                {
+                    patientKey: record.nid,
+                },
                 {
                     headers: {
                         Authorization:
@@ -44,13 +48,14 @@ const Patient = () => {
             );
             dispatch(hideLoading());
             if (res.data.success) {
-                message.success(res.data.message);
+                navigate(`/researcher/record/${record.nid}`);
             } else {
                 message.error(res.data.message);
             }
         } catch (error) {
             dispatch(hideLoading());
             console.log("Error: ", error);
+            message.error("Something went wrong!");
         }
     };
 
@@ -70,55 +75,32 @@ const Patient = () => {
             dataIndex: "name",
         },
         {
-            title: "Email",
-            dataIndex: "email",
-        },
-        {
-            title: "Phone",
-            dataIndex: "phone",
-        },
-        {
-            title: "Status",
-            dataIndex: "status",
-        },
-        {
-            title: "Created At",
-            dataIndex: "createdAt",
-        },
-        {
             title: "Actions",
             dataIndex: "actions",
+            fixed: "right",
+            width: 250,
             render: (text, record) => (
-                <div className="d-flex">
-                    {record.status === "blocked" ? (
-                        <button
-                            className="btn btn-success"
-                            onClick={() =>
-                                changeStatusHandler(record, "approved")
-                            }
-                        >
-                            Approve
-                        </button>
-                    ) : (
-                        <button
-                            className="btn btn-danger"
-                            onClick={() =>
-                                changeStatusHandler(record, "blocked")
-                            }
-                        >
-                            Block
-                        </button>
-                    )}
+                <div className="">
+                    <button
+                        className="btn btn-secondary m-1"
+                        onClick={() => {
+                            checkRecordAccessPermissionHandler(record);
+                        }}
+                    >
+                        Records
+                    </button>
                 </div>
             ),
         },
     ];
     return (
         <Layout>
-            <h3 className="p-2 text-center">Patients List</h3>
+            <h3 className="p-2 text-center">
+                Patients List <hr />
+            </h3>
             <Table columns={columns} dataSource={patients} />
         </Layout>
     );
 };
 
-export default Patient;
+export default PatientList;

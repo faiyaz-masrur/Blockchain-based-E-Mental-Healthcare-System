@@ -2,8 +2,10 @@ const queryUser = require("../data/queryUser");
 const queryAppointment = require("../data/queryAppointment");
 const doctorModel = require("../models/doctorModel");
 const appointmentModel = require("../models/appointmentModel");
+const accessModel = require("../models/accessModel");
 const removeAppointment = require("../data/removeAppointment");
-const updateInfo = require("../data/updateInfo");
+const changeUserStatus = require("../data/changeUserStatus");
+const changeAppointmentStatus = require("../data/changeAppointmentStatus");
 const userModel = require("../models/userModel");
 const storeRecord = require("../data/storeRecord");
 const storeAppointment = require("../data/storeAppointment");
@@ -40,10 +42,34 @@ const updateProfileController = async (req, res) => {
     }
 };
 
+const changeUserStatusController = async (req, res) => {
+    try {
+        await changeUserStatus.main({
+            userKey: req.body.userData.nid,
+            newStatus: req.body.newStatus,
+        });
+        const usermdb = await userModel.findOne({ nid: req.body.userData.nid });
+        await userModel.findByIdAndUpdate(usermdb._id, {
+            status: req.body.newStatus,
+        });
+        res.status(200).send({
+            success: true,
+            message: `Status Updated to ${req.body.newStatus}`,
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).send({
+            success: false,
+            message: "Server error: Failed changing status!",
+        });
+    }
+};
+
 const getAllRequestedApointmentsController = async (req, res) => {
     try {
         const requestedAppointments = await appointmentModel.find({
             doctorKey: req.body.userData.nid,
+            payment: "paid",
         });
         res.status(200).send({
             success: true,
@@ -121,11 +147,10 @@ const actionRequestedAppointmentCntroller = async (req, res) => {
 const cancelAppointmentCntroller = async (req, res) => {
     try {
         await removeAppointment.main(req.body);
-        if (!req.body.type === "removed") {
-            await updateInfo.main({
-                function: "changeAppointmentStatus",
-                key: req.body.doctorKey,
-                otherKey: req.body.patientKey,
+        if (req.body.type !== "removed") {
+            await changeAppointmentStatus.main({
+                doctorKey: req.body.doctorKey,
+                patientKey: req.body.patientKey,
                 newStatus: req.body.type,
                 createdAt: req.body.createdAt,
             });
@@ -135,7 +160,7 @@ const cancelAppointmentCntroller = async (req, res) => {
             const notification = usermdb.notification;
             notification.push({
                 type: "book-appointment-request",
-                message: `Dr. ${req.body.userData.name} has canceled the appointment.`,
+                message: `Dr. ${req.body.userData.name} has ${req.body.type} the appointment.`,
                 onClickPath: "/patient/appointments",
             });
             await userModel.findByIdAndUpdate(usermdb._id, {
@@ -158,10 +183,9 @@ const cancelAppointmentCntroller = async (req, res) => {
 
 const changeAppointmentStatusController = async (req, res) => {
     try {
-        await updateInfo.main({
-            function: "changeAppointmentStatus",
-            key: req.body.doctorKey,
-            otherKey: req.body.patientKey,
+        await changeAppointmentStatus.main({
+            doctorKey: req.body.doctorKey,
+            patientKey: req.body.patientKey,
             newStatus: req.body.newStatus,
             createdAt: req.body.createdAt,
         });
@@ -248,12 +272,105 @@ const getAllRecordsController = async (req, res) => {
     try {
         const userStr = await queryUser.main({ key: req.body.patientKey });
         const user = JSON.parse(userStr);
-
-        res.status(200).send({
-            success: true,
-            message: "All medical records",
-            records: user.records,
+        const dataAccess = user.dataAccess;
+        const result = dataAccess.find(
+            (accessInfo) => accessInfo.userKey === req.body.userData.nid
+        );
+        if (result) {
+            return res.status(200).send({
+                success: true,
+                message: "All medical records",
+                records: user.records,
+            });
+        } else {
+            const accessRequest = await accessModel.findOne({
+                userKey: req.body.userData.nid,
+            });
+            if (accessRequest) {
+                return res.status(200).send({
+                    success: false,
+                    message: "Access request has been sent.",
+                });
+            } else {
+                const newAccessRequest = {
+                    userKey: req.body.userData.nid,
+                    patientKey: req.body.patientKey,
+                    userName: req.body.userData.name,
+                    address: req.body.userData.address,
+                    userType: req.body.userData.userType,
+                };
+                const storeAccessRequest = new accessModel(newAccessRequest);
+                await storeAccessRequest.save();
+                const patient = await userModel.findOne({
+                    nid: req.body.patientKey,
+                });
+                patient.notification.push({
+                    type: "New-record-access-request",
+                    message: `Dr. ${req.body.userData.name} has requested for record access permission.`,
+                    onClickPath: "/patient/medical-record",
+                });
+                await patient.save();
+                res.status(200).send({
+                    success: false,
+                    message: "Access request sent.",
+                });
+            }
+        }
+    } catch (error) {
+        console.log(error);
+        res.status(500).send({
+            success: false,
+            message: "Server error: Failed getting medical records!",
         });
+    }
+};
+
+const checkAccessPermissionController = async (req, res) => {
+    try {
+        const userStr = await queryUser.main({ key: req.body.patientKey });
+        const user = JSON.parse(userStr);
+        const dataAccess = user.dataAccess;
+        const result = dataAccess.find(
+            (accessInfo) => accessInfo.userKey === req.body.userData.nid
+        );
+        if (result) {
+            return res.status(200).send({
+                success: true,
+            });
+        } else {
+            const accessRequest = await accessModel.findOne({
+                userKey: req.body.userData.nid,
+            });
+            if (accessRequest) {
+                return res.status(200).send({
+                    success: false,
+                    message: "Access request has been sent.",
+                });
+            } else {
+                const newAccessRequest = {
+                    userKey: req.body.userData.nid,
+                    patientKey: req.body.patientKey,
+                    userName: req.body.userData.name,
+                    address: req.body.userData.address,
+                    userType: req.body.userData.userType,
+                };
+                const storeAccessRequest = new accessModel(newAccessRequest);
+                await storeAccessRequest.save();
+                const patient = await userModel.findOne({
+                    nid: req.body.patientKey,
+                });
+                patient.notification.push({
+                    type: "New-record-access-request",
+                    message: `Dr. ${req.body.userData.name} has requested for record access permission.`,
+                    onClickPath: "/patient/medical-record",
+                });
+                await patient.save();
+                res.status(200).send({
+                    success: false,
+                    message: "Access request sent.",
+                });
+            }
+        }
     } catch (error) {
         console.log(error);
         res.status(500).send({
@@ -273,4 +390,6 @@ module.exports = {
     getAllSessionsController,
     storeRecordController,
     getAllRecordsController,
+    checkAccessPermissionController,
+    changeUserStatusController,
 };

@@ -5,21 +5,20 @@ import Layout from "../../components/Layout";
 import { message, Col, Row } from "antd";
 import { useDispatch } from "react-redux";
 import { showLoading, hideLoading } from "../../redux/features/alertSlice";
-import Star from "../../components/Star";
 
-const DoctorDetails = () => {
+const ResearcherDetails = () => {
     const params = useParams();
     const dispatch = useDispatch();
     const effectRun = useRef(true);
-    const [doctor, setDoctor] = useState({});
+    const [researcher, setResearcher] = useState({});
 
     //get doctor details
-    const getDoctor = useCallback(async () => {
+    const getResearcher = useCallback(async () => {
         try {
             const res = await axios.post(
-                "/api/v1/admin/get-doctor-byId",
+                "/api/v1/admin/get-researcher-byId",
                 {
-                    doctorKey: params.doctorKey,
+                    researcherKey: params.researcherKey,
                 },
                 {
                     headers: {
@@ -29,7 +28,7 @@ const DoctorDetails = () => {
                 }
             );
             if (res.data.success) {
-                setDoctor(res.data.data);
+                setResearcher(res.data.researcher);
                 message.success(res.data.message);
             } else {
                 message.error(res.data.message);
@@ -37,15 +36,15 @@ const DoctorDetails = () => {
         } catch (error) {
             console.log("Error: ", error);
         }
-    }, [params, setDoctor]);
+    }, [params, setResearcher]);
 
     const changeStatusHandler = async (record, status) => {
         try {
             dispatch(showLoading());
             const res = await axios.post(
-                "/api/v1/admin/change-user-status",
+                "/api/v1/admin/change-researcher-status",
                 {
-                    userKey: record.nid,
+                    key: record.nid,
                     newStatus: status,
                 },
                 {
@@ -69,96 +68,71 @@ const DoctorDetails = () => {
 
     useEffect(() => {
         if (effectRun.current) {
-            getDoctor();
+            getResearcher();
         }
 
         return () => {
             effectRun.current = false;
         };
-    }, [getDoctor, effectRun]);
+    }, [getResearcher, effectRun]);
 
     return (
         <Layout>
             <h3 className="p-2 text-center">
-                Doctor Details <hr />
+                Researcher Details <hr />
             </h3>
             <div className="m-3">
-                <h5 className="">Doctor's App Details :</h5>
-                <Row gutter="20" className="p-2">
+                <h5 className="">Researcher's App Details :</h5>
+                <Row gutter="10" className="p-2">
                     <Col xs={10} md={10} lg={5}>
                         <div>
                             <p>
-                                <b>Nid :</b> {doctor.nid}
-                            </p>
-                        </div>
-                    </Col>
-                    <Col xs={10} md={10} lg={5}>
-                        <div>
-                            <p>
-                                <b>Type :</b> {doctor.userType}
+                                <b>Nid :</b> {researcher.nid}
                             </p>
                         </div>
                     </Col>
                     <Col xs={10} md={10} lg={5}>
                         <div>
                             <p>
-                                <b>Status :</b> {doctor.status}
+                                <b>Type :</b> {researcher.userType}
                             </p>
                         </div>
                     </Col>
-                    <Col xs={10} md={10} lg={6}>
+                    <Col xs={10} md={10} lg={5}>
                         <div>
                             <p>
-                                <b>Created At :</b> {doctor.createdAt}
+                                <b>Status :</b> {researcher.status}
                             </p>
                         </div>
                     </Col>
-                    <Col xs={24} md={24} lg={8}>
+                    <Col xs={10} md={10} lg={5}>
                         <div>
-                            <p className="d-flex">
-                                <b>Ratings :</b>{" "}
-                                <Star
-                                    stars={doctor.rating}
-                                    rated={doctor.ratedPatientCount}
-                                />
+                            <p>
+                                <b>Created At :</b> {researcher.createdAt}
                             </p>
                         </div>
                     </Col>
                 </Row>
-                <h5 className="">Doctor's Personal Details :</h5>
+                <h5 className="">Researcher's Personal Details :</h5>
                 <Row gutter="20" className="p-2">
                     <Col xs={10} md={10} lg={6}>
                         <div>
                             <p>
-                                <b>Name :</b> {doctor.name}
+                                <b>Name :</b> {researcher.name}
                             </p>
                         </div>
                     </Col>
                     <Col xs={10} md={10} lg={6}>
                         <div>
                             <p>
-                                <b>Email :</b> {doctor.email}
+                                <b>Email :</b> {researcher.email}
                             </p>
                         </div>
                     </Col>
                     <Col xs={10} md={10} lg={6}>
                         <div>
                             <p>
-                                <b>Phone :</b> {doctor.phone}
-                            </p>
-                        </div>
-                    </Col>
-                    <Col xs={10} md={10} lg={6}>
-                        <div>
-                            <p>
-                                <b>Website :</b> {doctor.website}
-                            </p>
-                        </div>
-                    </Col>
-                    <Col xs={10} md={10} lg={14}>
-                        <div>
-                            <p>
-                                <b>Degree :</b> {doctor.degree}
+                                <b>Phone :</b> {researcher.phone}
                             </p>
                         </div>
                     </Col>
@@ -168,56 +142,25 @@ const DoctorDetails = () => {
                     <Col xs={24} md={24} lg={12}>
                         <div>
                             <p>
-                                <b>Chamber :</b> {doctor.address}
+                                <b>Institute :</b> {researcher.address}
                             </p>
                         </div>
                     </Col>
-                    <Col xs={24} md={24} lg={12}>
+                    <Col xs={10} md={10} lg={14}>
                         <div>
                             <p>
-                                <b>Specialization :</b> {doctor.specialization}
-                            </p>
-                        </div>
-                    </Col>
-                    <Col xs={24} md={24} lg={4}>
-                        <div>
-                            <p>
-                                <b>Experience :</b> {doctor.experience}
-                            </p>
-                        </div>
-                    </Col>
-                    <Col xs={24} md={24} lg={3}>
-                        <div>
-                            <p>
-                                <b>Fees :</b> {doctor.fees}
-                            </p>
-                        </div>
-                    </Col>
-                    <Col xs={24} md={24} lg={8}>
-                        <div>
-                            <p>
-                                <b>Per Consultation Duration :</b>{" "}
-                                {doctor.consultationDuration}
-                            </p>
-                        </div>
-                    </Col>
-                    <Col xs={24} md={24} lg={8}>
-                        <div>
-                            <p>
-                                <b>Consultation Timing :</b>{" "}
-                                {doctor.consultationStartTime} -{" "}
-                                {doctor.consultationEndTime}
+                                <b>Degree :</b> {researcher.degree}
                             </p>
                         </div>
                     </Col>
                 </Row>
                 <div className="d-flex justify-content-center">
-                    {doctor.userType === "candidate" ? (
+                    {researcher.userType === "candidate" ? (
                         <>
                             <button
                                 className="btn btn-success m-1"
                                 onClick={() =>
-                                    changeStatusHandler(doctor, "approved")
+                                    changeStatusHandler(researcher, "approved")
                                 }
                             >
                                 Accept
@@ -225,17 +168,17 @@ const DoctorDetails = () => {
                             <button
                                 className="btn btn-danger m-1"
                                 onClick={() =>
-                                    changeStatusHandler(doctor, "rejected")
+                                    changeStatusHandler(researcher, "rejected")
                                 }
                             >
                                 Reject
                             </button>
                         </>
-                    ) : doctor.status === "blocked" ? (
+                    ) : researcher.status === "blocked" ? (
                         <button
                             className="btn btn-success w-30 m-1"
                             onClick={() =>
-                                changeStatusHandler(doctor, "approved")
+                                changeStatusHandler(researcher, "approved")
                             }
                         >
                             Approve
@@ -244,7 +187,7 @@ const DoctorDetails = () => {
                         <button
                             className="btn btn-danger w-50 m-1"
                             onClick={() =>
-                                changeStatusHandler(doctor, "blocked")
+                                changeStatusHandler(researcher, "blocked")
                             }
                         >
                             Block
@@ -256,4 +199,4 @@ const DoctorDetails = () => {
     );
 };
 
-export default DoctorDetails;
+export default ResearcherDetails;

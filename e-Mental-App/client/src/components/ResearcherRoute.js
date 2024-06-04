@@ -4,7 +4,7 @@ import { Navigate, Outlet } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { setUser } from "../redux/features/userSlice";
 
-const DoctorRoute = () => {
+const ResearcherRoute = () => {
     const dispatch = useDispatch();
     const { user } = useSelector((state) => state.user);
 
@@ -23,7 +23,7 @@ const DoctorRoute = () => {
                 }
             );
             if (res.data.success) {
-                if (res.data.data.userType === "doctor") {
+                if (res.data.data.userType === "researcher") {
                     dispatch(setUser(res.data.data));
                 } else {
                     <Navigate to="/" />;
@@ -51,4 +51,4 @@ const DoctorRoute = () => {
     }
 };
 
-export default DoctorRoute;
+export default ResearcherRoute;

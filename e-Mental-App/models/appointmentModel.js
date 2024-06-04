@@ -49,6 +49,10 @@ const appointmentSchema = new mongoose.Schema({
         type: String,
         default: "pending",
     },
+    payment: {
+        type: String,
+        default: "unpaid",
+    },
     createdAt: {
         type: String,
         required: true,

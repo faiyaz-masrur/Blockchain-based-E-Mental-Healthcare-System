@@ -54,18 +54,36 @@ async function main(params) {
         // Get the contract from the network.
         const contract = network.getContract("fabMed");
 
-        const func = params.function;
-        const key = params.key;
-        const newStatus = params.newStatus;
-        const otherKey = params.otherKey ? params.otherKey : "";
-        const createdAt = params.createdAt ? params.createdAt : "";
+        const time = new Date();
+        const currentTime = `${time.getDate()}/${
+            time.getMonth() + 1
+        }/${time.getFullYear()}, ${time.getHours()}:${time.getMinutes()}:${time.getSeconds()}`;
+
+        // gathering payload data
+        const key = params.nid;
+        const name = params.name;
+        const email = params.email;
+        const password = params.password;
+        const phone = params.phone;
+        const degree = params.degree;
+        const address = params.address;
+        const status = "approved";
+        const userType = "researcher";
+        const createdAt =
+            params.createdAt === "" ? currentTime : params.createdAt;
 
         // Submit the specified transaction.
         await contract.submitTransaction(
-            `${func}`,
+            "storeResearcher",
             `${key}`,
-            `${otherKey}`,
-            `${newStatus}`,
+            `${name}`,
+            `${email}`,
+            `${password}`,
+            `${userType}`,
+            `${phone}`,
+            `${degree}`,
+            `${address}`,
+            `${status}`,
             `${createdAt}`
         );
         console.log("Transaction has been submitted");
@@ -73,7 +91,7 @@ async function main(params) {
         // Disconnect from the gateway.
         await gateway.disconnect();
     } catch (error) {
-        console.error(`Failed to change owner transaction: ${error}`);
+        console.error(`Failed to create transaction: ${error}`);
         return error;
     }
 }

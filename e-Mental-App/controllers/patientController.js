@@ -2,13 +2,18 @@ const queryUser = require("../data/queryUser");
 const doctorModel = require("../models/doctorModel");
 const queryAppointment = require("../data/queryAppointment");
 const removeAppointment = require("../data/removeAppointment");
+const accessModel = require("../models/accessModel");
+const storeAccess = require("../data/storeAccess");
+const storeRating = require("../data/storeRating");
+const removeAccess = require("../data/removeAccess");
 const removeRecord = require("../data/removeRecord");
 const storeRecord = require("../data/storeRecord");
 const storeAppointment = require("../data/storeAppointment");
-const updateInfo = require("../data/updateInfo");
+const changeAppointmentStatus = require("../data/changeAppointmentStatus");
 const userModel = require("../models/userModel");
 const appointmentModel = require("../models/appointmentModel");
 const moment = require("moment");
+const Stripe = require("stripe");
 const _ = require("lodash");
 
 const getDoctorByIdController = async (req, res) => {
@@ -20,35 +25,12 @@ const getDoctorByIdController = async (req, res) => {
                 .send({ success: false, message: "Doctor not found!" });
         }
         const doctor = JSON.parse(strDoctor);
-        const doctorData = {};
-        if (req.body.dataQuantity === "half") {
-            doctorData.nid = doctor.nid;
-            doctorData.name = doctor.name;
-            doctorData.email = doctor.email;
-            doctorData.phone = doctor.phone;
-            doctorData.fees = doctor.fees;
-            doctorData.consultationDuration = doctor.consultationDuration;
-            doctorData.consultationStartTime = doctor.consultationStartTime;
-            doctorData.consultationEndTime = doctor.consultationEndTime;
-        } else {
-            doctorData.nid = doctor.nid;
-            doctorData.name = doctor.name;
-            doctorData.email = doctor.email;
-            doctorData.phone = doctor.phone;
-            doctorData.degree = doctor.degree;
-            doctorData.website = doctor.website;
-            doctorData.address = doctor.address;
-            doctorData.specialization = doctor.specialization;
-            doctorData.experience = doctor.experience;
-            doctorData.fees = doctor.fees;
-            doctorData.consultationDuration = doctor.consultationDuration;
-            doctorData.consultationStartTime = doctor.consultationStartTime;
-            doctorData.consultationEndTime = doctor.consultationEndTime;
-        }
+        doctor.password = undefined;
+        doctor.appointment = undefined;
         res.status(200).send({
             success: true,
             message: "Doctor info fetched",
-            data: doctorData,
+            data: doctor,
         });
     } catch (error) {
         console.log(error);
@@ -74,6 +56,8 @@ const getAllDoctorsController = async (req, res) => {
                 fees: doctor.fees,
                 consultationStartTime: doctor.consultationStartTime,
                 consultationEndTime: doctor.consultationEndTime,
+                rating: doctor.rating,
+                ratedPatientCount: doctor.ratedPatientCount,
             };
         });
         res.status(200).send({
@@ -91,15 +75,67 @@ const getAllDoctorsController = async (req, res) => {
     }
 };
 
-const bookAppointmentController = async (req, res) => {
+const searchDoctorController = async (req, res) => {
     try {
-        req.body.endTime = moment(req.body.startTime, "HH:mm a")
-            .add(req.body.duration, "m")
-            .format("HH:mm a");
-        req.body.createdAt = moment().format("YYYY-MM-DD HH:mm:ss");
-        const newAppointment = new appointmentModel(req.body);
-        await newAppointment.save();
-        const doctor = await userModel.findOne({ nid: req.body.doctorKey });
+        const allUsersStr = await queryUser.main({});
+        const allUsersObj = JSON.parse(allUsersStr);
+        let doctors;
+        if (req.body.name) {
+            doctors = allUsersObj.filter(
+                (user) =>
+                    user.userType === "doctor" &&
+                    user.status === "approved" &&
+                    user.name === req.body.name
+            );
+        } else {
+            doctors = allUsersObj.filter(
+                (user) =>
+                    user.userType === "doctor" && user.status === "approved"
+            );
+        }
+        if (doctors.length === 0) {
+            return res.status(200).send({
+                success: false,
+                message: "No such doctor!",
+                doctors: [],
+            });
+        }
+        const doctorsSpecificValue = doctors.map((doctor) => {
+            return {
+                nid: doctor.nid,
+                name: doctor.name,
+                specialization: doctor.specialization,
+                fees: doctor.fees,
+                consultationStartTime: doctor.consultationStartTime,
+                consultationEndTime: doctor.consultationEndTime,
+                rating: doctor.rating,
+                ratedPatientCount: doctor.ratedPatientCount,
+            };
+        });
+        res.status(200).send({
+            success: true,
+            message: "Searched Doctors",
+            doctors: doctorsSpecificValue,
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).send({
+            success: false,
+            message: "Server error: Failed getting all doctors data!",
+            error,
+        });
+    }
+};
+
+const confirmAppointmentController = async (req, res) => {
+    try {
+        const appointment = await appointmentModel.findByIdAndUpdate(
+            req.params["appointmentId"],
+            {
+                payment: "paid",
+            }
+        );
+        const doctor = await userModel.findOne({ nid: appointment.doctorKey });
         doctor.notification.push({
             type: "New-appointment-request",
             message: `A new appointment request from ${req.body.userData.name}`,
@@ -108,7 +144,7 @@ const bookAppointmentController = async (req, res) => {
         await doctor.save();
         res.status(200).send({
             success: true,
-            message: "Appointment booked successfully",
+            message: "Appointment booked Successfully",
         });
     } catch (error) {
         console.log(error);
@@ -116,6 +152,50 @@ const bookAppointmentController = async (req, res) => {
             success: false,
             message: "Server error: Failed booking appointment!",
             error,
+        });
+    }
+};
+
+const bookAppointmentController = async (req, res) => {
+    try {
+        req.body.endTime = moment(req.body.startTime, "HH:mm a")
+            .add(req.body.duration, "m")
+            .format("HH:mm a");
+        req.body.createdAt = moment().format("YYYY-MM-DD HH:mm:ss");
+        const newAppointment = new appointmentModel(req.body);
+        await newAppointment.save();
+
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+        const session = await stripe.checkout.sessions.create({
+            payment_method_types: ["card"],
+            mode: "payment",
+            success_url: `${process.env.CLIENT_URL}/patient/confirm-appointment/${newAppointment._id}`,
+            cancel_url: `${process.env.CLIENT_URL}/patient/appointment-failed/${req.body.doctorKey}`,
+            client_reference_id: req.body.doctorKey,
+            line_items: [
+                {
+                    price_data: {
+                        currency: "bdt",
+                        unit_amount: req.body.fees * 100,
+                        product_data: {
+                            name: req.body.doctorName,
+                            description: req.body.specialization,
+                        },
+                    },
+                    quantity: 1,
+                },
+            ],
+        });
+        res.status(200).send({
+            success: true,
+            message: "Appointment time set successfully",
+            session,
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).send({
+            success: false,
+            message: "Server error: Failed booking appointment!",
         });
     }
 };
@@ -342,11 +422,10 @@ const cancleRequestedAppointmentController = async (req, res) => {
 const cancleAppointmentController = async (req, res) => {
     try {
         await removeAppointment.main(req.body);
-        if (!req.body.type === "removed") {
-            await updateInfo.main({
-                function: "changeAppointmentStatus",
-                key: req.body.doctorKey,
-                otherKey: req.body.patientKey,
+        if (req.body.type !== "removed") {
+            await changeAppointmentStatus.main({
+                doctorKey: req.body.doctorKey,
+                patientKey: req.body.patientKey,
                 newStatus: req.body.type,
                 createdAt: req.body.createdAt,
             });
@@ -463,6 +542,137 @@ const removeRecordController = async (req, res) => {
     }
 };
 
+const getAllRequestedAccessController = async (req, res) => {
+    try {
+        const requestedAccessList = await accessModel.find({
+            patientKey: req.body.userData.nid,
+        });
+        res.status(200).send({
+            success: true,
+            message: "All Requested Access Info",
+            requestedAccessList,
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).send({
+            success: false,
+            message: "Server error: Failed getting all requested access info!",
+        });
+    }
+};
+
+const getAllAccessController = async (req, res) => {
+    try {
+        const userStr = await queryUser.main({
+            key: req.body.userData.nid,
+        });
+        const user = JSON.parse(userStr);
+        res.status(200).send({
+            success: true,
+            message: "All Data Access Info",
+            accessList: user.dataAccess,
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).send({
+            success: false,
+            message: "Server error: Failed getting all access info!",
+            error,
+        });
+    }
+};
+
+const actionRequestedAccessController = async (req, res) => {
+    try {
+        const requestedAccess = await accessModel.findOne({
+            userKey: req.body.userKey,
+            patientKey: req.body.userData.nid,
+        });
+        if (req.body.type === "accepted") {
+            console.log(requestedAccess);
+            await storeAccess.main(requestedAccess);
+        }
+        await accessModel.deleteOne(requestedAccess._id);
+        const usermdb = await userModel.findOne({
+            nid: req.body.userKey,
+        });
+        const notification = usermdb.notification;
+        notification.push({
+            type: "record-access-request",
+            message: `${req.body.userData.name} has ${req.body.type} your record access request`,
+            onClickPath: "/",
+        });
+        await userModel.findByIdAndUpdate(usermdb._id, {
+            notification,
+        });
+        return res.status(200).send({
+            success: true,
+            message: `Request is ${req.body.type}`,
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).send({
+            success: false,
+            message: "Server error: Action failed!",
+            error,
+        });
+    }
+};
+
+const removeAccessController = async (req, res) => {
+    try {
+        await removeAccess.main({
+            userKey: req.body.userKey,
+            patientKey: req.body.userData.nid,
+        });
+        const usermdb = await userModel.findOne({
+            nid: req.body.userKey,
+        });
+        const notification = usermdb.notification;
+        notification.push({
+            type: "record-access",
+            message: `${req.body.userData.name} has removed your record access permission.`,
+            onClickPath: "/",
+        });
+        await userModel.findByIdAndUpdate(usermdb._id, {
+            notification,
+        });
+        res.status(200).send({
+            success: true,
+            message: `Access permission removed successfully.`,
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).send({
+            success: false,
+            message: "Server error: Failed removing access permission!",
+            error,
+        });
+    }
+};
+
+const submitRatingController = async (req, res) => {
+    try {
+        await storeRating.main(req.body);
+        res.status(200).send({
+            success: true,
+            message: "Rating submitted successfully",
+        });
+        await changeAppointmentStatus.main({
+            doctorKey: req.body.doctorKey,
+            patientKey: req.body.userData.nid,
+            newStatus: "rated",
+            createdAt: req.body.createdAt,
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).send({
+            success: false,
+            message: "Server error: Failed submitting rating!",
+        });
+    }
+};
+
 module.exports = {
     getDoctorByIdController,
     getAllDoctorsController,
@@ -476,4 +686,11 @@ module.exports = {
     getAllRecordsController,
     storeRecordController,
     removeRecordController,
+    getAllRequestedAccessController,
+    getAllAccessController,
+    removeAccessController,
+    actionRequestedAccessController,
+    submitRatingController,
+    searchDoctorController,
+    confirmAppointmentController,
 };

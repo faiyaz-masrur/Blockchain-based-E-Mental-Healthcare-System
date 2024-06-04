@@ -1,10 +1,12 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import axios from "axios";
-import { Row, message } from "antd";
+import { Row, message, Input } from "antd";
 import Layout from "../../components/Layout";
 import { useNavigate } from "react-router-dom";
+import Star from "../../components/Star";
 
 const DoctorsList = () => {
+    const { Search } = Input;
     const navigate = useNavigate();
     const effectRun = useRef(true);
     const [doctors, setDoctors] = useState([]);
@@ -28,6 +30,34 @@ const DoctorsList = () => {
         }
     }, [setDoctors]);
 
+    const searchDoctorHandler = useCallback(
+        async (value) => {
+            try {
+                const res = await axios.post(
+                    "/api/v1/patient/search-doctor",
+                    {
+                        name: value,
+                    },
+                    {
+                        headers: {
+                            Authorization:
+                                "Bearer " + localStorage.getItem("token"),
+                        },
+                    }
+                );
+                if (res.data.success) {
+                    setDoctors(res.data.doctors);
+                    message.success(res.data.message);
+                } else {
+                    message.error(res.data.message);
+                }
+            } catch (error) {
+                console.log("Error: ", error);
+            }
+        },
+        [setDoctors]
+    );
+
     useEffect(() => {
         if (effectRun.current) {
             getDoctors();
@@ -43,6 +73,15 @@ const DoctorsList = () => {
             <h3 className="p-2 text-center">
                 Home Page <hr />
             </h3>
+            <div className="m-3 text-center">
+                <Search
+                    placeholder="input search text"
+                    allowClear
+                    enterButton="Search"
+                    style={{ width: 500 }}
+                    onSearch={searchDoctorHandler}
+                />
+            </div>
             <Row>
                 {doctors &&
                     doctors.map((doctor) => (
@@ -52,19 +91,24 @@ const DoctorsList = () => {
                             </div>
                             <div className="card-body">
                                 <p>
-                                    <b>Specialization</b>
-                                    {": "}
+                                    <b>Specialization:</b>{" "}
                                     {doctor.specialization}
                                 </p>
                                 <p>
-                                    <b>Fees per Consultation</b>
-                                    {": "} {doctor.fees}
+                                    <b>Fees per Consultation:</b> {doctor.fees}
                                 </p>
                                 <p>
-                                    <b>Consultation Time</b>
-                                    {": "}
-                                    {doctor.consultationStartTime} -{" "}
+                                    <b>Consultation Time:</b>{" "}
+                                    {doctor.consultationStartTime}
+                                    {" - "}
                                     {doctor.consultationEndTime}
+                                </p>
+                                <p className="d-flex">
+                                    <b>Ratings: </b>{" "}
+                                    <Star
+                                        stars={doctor.rating}
+                                        rated={doctor.ratedPatientCount}
+                                    />
                                 </p>
                                 <button
                                     className="btn btn-primary m-1"

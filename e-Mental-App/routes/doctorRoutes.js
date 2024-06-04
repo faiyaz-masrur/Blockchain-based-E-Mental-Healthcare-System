@@ -10,6 +10,8 @@ const {
     getAllSessionsController,
     storeRecordController,
     getAllRecordsController,
+    checkAccessPermissionController,
+    changeUserStatusController,
 } = require("../controllers/doctorController");
 const checkDoctorMiddleware = require("../middlewares/checkDoctorMiddleware");
 
@@ -79,6 +81,20 @@ router.post(
     authMiddleware,
     checkDoctorMiddleware,
     getAllRecordsController
+);
+
+router.post(
+    "/check-access-permission",
+    authMiddleware,
+    checkDoctorMiddleware,
+    checkAccessPermissionController
+);
+
+router.post(
+    "/change-user-status",
+    authMiddleware,
+    checkDoctorMiddleware,
+    changeUserStatusController
 );
 
 module.exports = router;

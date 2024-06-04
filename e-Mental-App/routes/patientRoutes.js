@@ -14,6 +14,13 @@ const {
     getAllRecordsController,
     storeRecordController,
     removeRecordController,
+    getAllRequestedAccessController,
+    getAllAccessController,
+    removeAccessController,
+    actionRequestedAccessController,
+    submitRatingController,
+    searchDoctorController,
+    confirmAppointmentController,
 } = require("../controllers/patientController");
 
 // router object
@@ -96,6 +103,13 @@ router.post(
     removeRecordController
 );
 
+router.post(
+    "/search-doctor",
+    authMiddleware,
+    checkPatientMiddleware,
+    searchDoctorController
+);
+
 router.get(
     "/get-all-sessions",
     authMiddleware,
@@ -108,6 +122,48 @@ router.get(
     authMiddleware,
     checkPatientMiddleware,
     getAllRecordsController
+);
+
+router.get(
+    "/get-all-requested-access",
+    authMiddleware,
+    checkPatientMiddleware,
+    getAllRequestedAccessController
+);
+
+router.get(
+    "/get-all-access",
+    authMiddleware,
+    checkPatientMiddleware,
+    getAllAccessController
+);
+
+router.post(
+    "/remove-access",
+    authMiddleware,
+    checkPatientMiddleware,
+    removeAccessController
+);
+
+router.post(
+    "/action-requested-access",
+    authMiddleware,
+    checkPatientMiddleware,
+    actionRequestedAccessController
+);
+
+router.post(
+    "/submit-rating",
+    authMiddleware,
+    checkPatientMiddleware,
+    submitRatingController
+);
+
+router.post(
+    "/confirm-appointment/:appointmentId",
+    authMiddleware,
+    checkPatientMiddleware,
+    confirmAppointmentController
 );
 
 module.exports = router;

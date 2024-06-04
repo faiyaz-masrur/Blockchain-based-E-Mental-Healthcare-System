@@ -90,9 +90,11 @@ class fabMed extends Contract {
                 specialization: "Brain, Drug Addiction, Sex",
                 experience: "5 years",
                 fees: "600",
-                consultationStartTime: "17:00 pm",
-                consultationEndTime: "20:00 pm",
+                consultationStartTime: "17:00pm",
+                consultationEndTime: "20:00pm",
                 consultationDuration: "35",
+                rating: 0,
+                ratedPatientCount: 0,
                 userType: "doctor",
                 status: "approved",
                 createdAt: "17/02/2021, 10:45",
@@ -111,9 +113,11 @@ class fabMed extends Contract {
                 specialization: "Brain, Drug Addiction, Anxiety & Depression",
                 experience: "7 years",
                 fees: "800",
-                consultationStartTime: "10:00 am",
-                consultationEndTime: "15:00 pm",
+                consultationStartTime: "10:00am",
+                consultationEndTime: "15:00pm",
                 consultationDuration: "50",
+                rating: 0,
+                ratedPatientCount: 0,
                 userType: "doctor",
                 status: "approved",
                 createdAt: "05/11/2022, 01:05",
@@ -133,9 +137,11 @@ class fabMed extends Contract {
                     "Anxiety, Depression, Psychiatrist & Psychotherapist",
                 experience: "4 years",
                 fees: "600",
-                consultationStartTime: "11:00 am",
-                consultationEndTime: "17:00 pm",
+                consultationStartTime: "11:00am",
+                consultationEndTime: "17:00pm",
                 consultationDuration: "35",
+                rating: 0,
+                ratedPatientCount: 0,
                 userType: "doctor",
                 status: "approved",
                 createdAt: "10/12/2022, 04:27",
@@ -164,6 +170,7 @@ class fabMed extends Contract {
                 createdAt: "06/03/2023",
                 appointments: [],
                 records: [],
+                dataAccess: [],
                 password:
                     "$2a$10$4i4cFW1y1EKp0gqYPl3jH.vbPr43OT..l6MgWf.f.AaddQNeaK.WK",
             },
@@ -177,6 +184,7 @@ class fabMed extends Contract {
                 createdAt: "31/08/2023",
                 appointments: [],
                 records: [],
+                dataAccess: [],
                 password:
                     "$2a$10$4i4cFW1y1EKp0gqYPl3jH.vbPr43OT..l6MgWf.f.AaddQNeaK.WK",
             },
@@ -230,6 +238,7 @@ class fabMed extends Contract {
                 createdAt,
                 appointments: [],
                 records: [],
+                dataAccess: [],
             };
 
             await ctx.stub.putState(key, Buffer.from(JSON.stringify(user)));
@@ -279,6 +288,8 @@ class fabMed extends Contract {
                 consultationStartTime,
                 consultationEndTime,
                 consultationDuration,
+                rating: 0,
+                ratedPatientCount: 0,
                 status,
                 createdAt,
                 appointments: [],
@@ -286,6 +297,46 @@ class fabMed extends Contract {
 
             await ctx.stub.putState(key, Buffer.from(JSON.stringify(doctor)));
             console.info("============= END : Create Doctor ===========");
+        } catch (error) {
+            console.log(error);
+            return error;
+        }
+    }
+
+    async storeResearcher(
+        ctx,
+        key,
+        name,
+        email,
+        password,
+        userType,
+        phone,
+        degree,
+        address,
+        status,
+        createdAt
+    ) {
+        try {
+            console.info("============= START : Create Desearcher ===========");
+
+            const researcher = {
+                nid: key,
+                name,
+                email,
+                password,
+                userType,
+                phone,
+                degree,
+                address,
+                status,
+                createdAt,
+            };
+
+            await ctx.stub.putState(
+                key,
+                Buffer.from(JSON.stringify(researcher))
+            );
+            console.info("============= END : Create Researcher ===========");
         } catch (error) {
             console.log(error);
             return error;
@@ -313,14 +364,11 @@ class fabMed extends Contract {
         }
     }
 
-    async changeUserStatus(ctx, userKey, otherKey, newStatus, createdAt) {
+    async changeUserStatus(ctx, userKey, newStatus) {
         try {
             console.info("============= START : changeUserStatus ===========");
 
             const userAsBytes = await ctx.stub.getState(userKey); // get the user from chaincode state
-            if (!userAsBytes || userAsBytes.length === 0) {
-                throw new Error(`${userAsBytes} does not exist`);
-            }
             const user = JSON.parse(userAsBytes.toString());
             user.status = newStatus;
 
@@ -421,40 +469,49 @@ class fabMed extends Contract {
         }
     }
 
-    async changeAppointmentStatus(ctx, key, otherKey, newStatus, createdAt) {
+    async changeAppointmentStatus(
+        ctx,
+        doctorKey,
+        patientKey,
+        newStatus,
+        createdAt
+    ) {
         try {
-            const userAsBytes = await ctx.stub.getState(key);
-            const user = JSON.parse(userAsBytes.toString());
-            const otherUserAsBytes = await ctx.stub.getState(otherKey);
-            const otherUser = JSON.parse(otherUserAsBytes.toString());
-            const userAppointments = user.appointments;
-            const otherUserAppointments = otherUser.appointments;
-            for (let i = 0; i < userAppointments.length; i++) {
+            const doctorAsBytes = await ctx.stub.getState(doctorKey);
+            const doctor = JSON.parse(doctorAsBytes.toString());
+            const patientAsBytes = await ctx.stub.getState(patientKey);
+            const patient = JSON.parse(patientAsBytes.toString());
+            const doctorAppointments = doctor.appointments;
+            const patientAppointments = patient.appointments;
+            for (let i = 0; i < doctorAppointments.length; i++) {
                 if (
-                    userAppointments[i].doctorKey === key &&
-                    userAppointments[i].patientKey === otherKey &&
-                    userAppointments[i].createdAt === createdAt
+                    doctorAppointments[i].doctorKey === doctorKey &&
+                    doctorAppointments[i].patientKey === patientKey &&
+                    doctorAppointments[i].createdAt === createdAt
                 ) {
-                    userAppointments[i].status = newStatus;
+                    doctorAppointments[i].status = newStatus;
                     break;
                 }
             }
-            for (let i = 0; i < otherUserAppointments.length; i++) {
+            for (let i = 0; i < patientAppointments.length; i++) {
                 if (
-                    otherUserAppointments[i].doctorKey === key &&
-                    otherUserAppointments[i].patientKey === otherKey &&
-                    otherUserAppointments[i].createdAt === createdAt
+                    patientAppointments[i].doctorKey === doctorKey &&
+                    patientAppointments[i].patientKey === patientKey &&
+                    patientAppointments[i].createdAt === createdAt
                 ) {
-                    otherUserAppointments[i].status = newStatus;
+                    patientAppointments[i].status = newStatus;
                     break;
                 }
             }
-            user.appointments = userAppointments;
-            otherUser.appointments = otherUserAppointments;
-            await ctx.stub.putState(key, Buffer.from(JSON.stringify(user)));
+            doctor.appointments = doctorAppointments;
+            patient.appointments = patientAppointments;
             await ctx.stub.putState(
-                otherKey,
-                Buffer.from(JSON.stringify(otherUser))
+                doctorKey,
+                Buffer.from(JSON.stringify(doctor))
+            );
+            await ctx.stub.putState(
+                patientKey,
+                Buffer.from(JSON.stringify(patient))
             );
         } catch (error) {
             console.log(error);
@@ -513,6 +570,75 @@ class fabMed extends Contract {
             await ctx.stub.putState(
                 patientKey,
                 Buffer.from(JSON.stringify(user))
+            );
+        } catch (error) {
+            console.log(error);
+            return error;
+        }
+    }
+
+    async storeAccess(
+        ctx,
+        userKey,
+        patientKey,
+        userName,
+        address,
+        usertype,
+        createdAt
+    ) {
+        try {
+            const patientAsBytes = await ctx.stub.getState(patientKey); // get the user from chaincode state
+            const patient = JSON.parse(patientAsBytes.toString());
+            const dataAccess = {
+                userKey,
+                userName,
+                address,
+                usertype,
+                createdAt,
+            };
+            patient.dataAccess.push(dataAccess);
+            await ctx.stub.putState(
+                patientKey,
+                Buffer.from(JSON.stringify(patient))
+            );
+        } catch (error) {
+            console.log(error);
+            return error;
+        }
+    }
+
+    async removeAccess(ctx, userKey, patientKey) {
+        try {
+            const userAsBytes = await ctx.stub.getState(patientKey);
+            const user = JSON.parse(userAsBytes.toString());
+            const dataAccess = user.dataAccess;
+            for (let i = 0; i < dataAccess.length; i++) {
+                if (dataAccess[i].userKey === userKey) {
+                    dataAccess.splice(i, 1);
+                    break;
+                }
+            }
+            user.dataAccess = dataAccess;
+            await ctx.stub.putState(
+                patientKey,
+                Buffer.from(JSON.stringify(user))
+            );
+        } catch (error) {
+            console.log(error);
+            return error;
+        }
+    }
+
+    async storeRating(ctx, doctorKey, rating) {
+        try {
+            const doctorAsBytes = await ctx.stub.getState(doctorKey); // get the user from chaincode state
+            const doctor = JSON.parse(doctorAsBytes.toString());
+            doctor.rating =
+                (doctor.rating + rating) / (doctor.ratedPatientCount + 1);
+            doctor.ratedPatientCount = doctor.ratedPatientCount + 1;
+            await ctx.stub.putState(
+                doctorKey,
+                Buffer.from(JSON.stringify(doctor))
             );
         } catch (error) {
             console.log(error);

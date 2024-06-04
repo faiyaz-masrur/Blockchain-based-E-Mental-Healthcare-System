@@ -14,7 +14,7 @@ const PatientData = () => {
     const getRecords = useCallback(async () => {
         try {
             const res = await axios.post(
-                "/api/v1/doctor/get-all-records",
+                "/api/v1/researcher/get-all-records",
                 {
                     patientKey: patientKey,
                 },
@@ -77,10 +77,6 @@ const PatientData = () => {
         {
             title: "Disease",
             dataIndex: "disease",
-        },
-        {
-            title: "Created At",
-            dataIndex: "createdAt",
         },
         {
             title: "Actions",

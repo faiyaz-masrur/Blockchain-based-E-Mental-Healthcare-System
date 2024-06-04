@@ -3,6 +3,7 @@ import axios from "axios";
 import { useParams } from "react-router-dom";
 import Layout from "../components/Layout";
 import { message, Col, Row } from "antd";
+import Star from "../components/Star";
 
 const DoctorDetails = () => {
     const params = useParams();
@@ -133,6 +134,17 @@ const DoctorDetails = () => {
                                 <b>Consultation Timing :</b>{" "}
                                 {doctor.consultationStartTime} -{" "}
                                 {doctor.consultationEndTime}
+                            </p>
+                        </div>
+                    </Col>
+                    <Col xs={24} md={24} lg={8}>
+                        <div>
+                            <p className="d-flex">
+                                <b>Ratings :</b>{" "}
+                                <Star
+                                    stars={doctor.rating}
+                                    rated={doctor.ratedPatientCount}
+                                />
                             </p>
                         </div>
                     </Col>

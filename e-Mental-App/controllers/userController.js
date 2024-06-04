@@ -4,6 +4,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const doctorModel = require("../models/doctorModel");
 const userModel = require("../models/userModel");
+const researcherModel = require("../models/researcherModel");
 
 const loginController = async (req, res) => {
     try {
@@ -142,11 +143,7 @@ const applyDoctorController = async (req, res) => {
         notification.push({
             type: "apply-doctor-request",
             message: `${newDoctor.name} has applied for a doctor account`,
-            data: {
-                nid: newDoctor.nid,
-                name: newDoctor.name,
-                onClickPath: "/admin/doctors",
-            },
+            onClickPath: "/admin/doctors",
         });
         await userModel.findByIdAndUpdate(adminUser._id, { notification });
         res.status(201).send({
@@ -158,8 +155,56 @@ const applyDoctorController = async (req, res) => {
         console.log(error);
         res.status(500).send({
             success: false,
-            message: "Server error : Applying doctor failed!",
-            error,
+            message: "Server error : Failed applying doctor!",
+        });
+    }
+};
+
+const applyResearcherController = async (req, res) => {
+    try {
+        const existingUser = await queryUser.main({ key: req.body.nid });
+        if (existingUser.length !== 0) {
+            return res.status(200).send({
+                success: false,
+                message: "Failed: Nid already used!",
+            });
+        }
+        const researcherMdb = await researcherModel.findOne({
+            nid: req.body.nid,
+        });
+        if (researcherMdb) {
+            return res.status(200).send({
+                success: false,
+                message: "Failed: Nid already used!",
+            });
+        }
+        const password = req.body.password;
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+        req.body.password = hashedPassword;
+        const newResearcher = new researcherModel(req.body);
+        await newResearcher.save();
+        const adminUser = await userModel.findOne({
+            userType: "admin",
+            status: "approved",
+        });
+        const notification = adminUser.notification;
+        notification.push({
+            type: "apply-researcher-request",
+            message: `${newResearcher.name} has applied for a researcher account`,
+            onClickPath: "/admin/researchers",
+        });
+        await userModel.findByIdAndUpdate(adminUser._id, { notification });
+        res.status(201).send({
+            success: true,
+            message:
+                "Researcher request sent successfully. Please wait for admin approval.",
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).send({
+            success: false,
+            message: "Server error : Failed applying researcher!",
         });
     }
 };
@@ -292,4 +337,5 @@ module.exports = {
     deleteAllNotificationsController,
     storeUsersToMDbController,
     getDoctorByIdController,
+    applyResearcherController,
 };

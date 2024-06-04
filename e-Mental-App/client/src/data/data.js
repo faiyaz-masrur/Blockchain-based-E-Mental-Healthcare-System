@@ -21,7 +21,7 @@ export const patientMenu = [
     },
     {
         name: "Access Control",
-        path: "/accessControl",
+        path: "/patient/access-controle",
         icon: "fa-solid fa-gamepad",
     },
     {
@@ -45,7 +45,7 @@ export const doctorMenu = [
     },
     {
         name: "Profile",
-        path: "/doctor/Profile",
+        path: "/doctor/profile",
         icon: "fa-solid fa-user",
     },
 ];
@@ -73,8 +73,27 @@ export const adminMenu = [
         icon: "fa-solid fa-hospital-user",
     },
     {
+        name: "Researchers",
+        path: "/admin/researchers",
+        icon: "fa-solid fa-book-open-reader",
+    },
+    {
         name: "Profile",
         path: "/admin/profile",
+        icon: "fa-solid fa-user",
+    },
+];
+
+//researcher menu
+export const researcherMenu = [
+    {
+        name: "Home",
+        path: "/researcher/researcher-dashboard",
+        icon: "fa-solid fa-house",
+    },
+    {
+        name: "Profile",
+        path: "/researcher/profile",
         icon: "fa-solid fa-user",
     },
 ];
